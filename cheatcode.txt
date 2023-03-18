@@ -1,0 +1,2 @@
+ ./vendor/bin/sail artisan migrate:fresh --seed == php artisan migrate:fresh --seed
+ ./vendor/bin/sail artisan db == php artisan db
