@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('CACHE_DRIVER', 'file'),
+    'default' => env('CACHE_DRIVER', 'none'),
 
     /*
     |--------------------------------------------------------------------------
@@ -90,6 +90,9 @@ return [
 
         'octane' => [
             'driver' => 'octane',
+        ],
+        'none' => [
+            'driver' => 'null',
         ],
 
     ],
