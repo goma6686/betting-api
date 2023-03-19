@@ -24,6 +24,15 @@ body {
     font-size: 17px;
   }
 
+a:hover {
+    color: rgb(194, 61, 61);
+  }
+
+.error {
+    text-align: center;
+    color: blanchedalmond;
+}
+
 @media screen and (max-width: 500px) {
     .navbar a {
       float: none;
