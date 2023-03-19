@@ -18,3 +18,6 @@ use App\Http\Controllers\GameController;
     return view('welcome');
 });*/
 Route::get('/', [GameController::class, 'index']);
+Route::get('/BetGames', function () {
+    return view('betgames');
+});

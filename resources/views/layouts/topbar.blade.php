@@ -1,6 +1,6 @@
 <nav class="navbar navbar-top navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">
+      <a class="navbar-brand" href="/">
         <i class="fa fa-superpowers" aria-hidden="true"></i>
         RandomBET
       </a>
