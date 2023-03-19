@@ -18,7 +18,6 @@ class GameSeeder extends Seeder
 
         \DB::table('games')->insert([
                 ['id' => '1', 'game_name' => 'Lucky 7'],
-                ['id' => '2', 'game_name' => 'Like-New'],
                 ['id' => '3', 'game_name' => 'Lucky 5'],
                 ['id' => '5', 'game_name' => 'Bet On Poker'],
                 ['id' => '6', 'game_name' => 'Bet On Baccarat'],
