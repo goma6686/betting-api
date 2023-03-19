@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('games', function (Blueprint $table) {
             $table->id();
             $table->string('game_name');
+            $table->string('banner_image')->nullable();
         });
     }
 
