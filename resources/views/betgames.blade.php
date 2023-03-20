@@ -5,28 +5,30 @@
     @include('layouts/topbar')
     @include('layouts/navbar')
     <div class="iframe-container" style="margin:0 auto;">
-      <div id="betgames_iframe"></div>
+      <div id="iframe-content" style="margin:0 auto;">
+        <div id="betgames_div_iframe"></div>
+        <script>
+            const clientUrl = 'https://integrations01-webiframe.betgames.tv';
+            const script = document.createElement('script');
+    
+            script.onload = function () {
+                window.BetGames.setup({
+                    containerId: 'betgames_div_iframe',
+                    clientUrl: clientUrl,
+                    apiUrl: 'integrations01.betgames.tv',
+                    partnerCode: 'goda_test',
+                    partnerToken: '-',
+                    language: 'en',
+                    timezone: '0',
+                    defaultPage: '',
+                    defaultGame: '7',
+                });
+            };
+            script.type = 'text/javascript';
+            script.src = clientUrl + '/public/betgames.js' + '?' + Date.now();
+    
+            document.head.appendChild(script);
+        </script>
     </div>
-    <script>
-      const clientUrl = '';
-      const script = document.createElement('script');
-
-      script.onload = function () {
-        window.BetGames.setup({
-          containerId: 'betgames_iframe',
-          clientUrl: clientUrl,
-          apiUrl: '',
-          partnerCode: '',
-          partnerToken: '',
-          language: 'en',
-          isMobile: '0',
-          defaultGame: '1',
-        });
-      };
-      script.type = 'text/javascript';
-      script.src = clientUrl + '/public/betgames.js' + '?' + Date.now();
-
-      document.head.appendChild(script);
-    </script>
   </body>
 </html>
