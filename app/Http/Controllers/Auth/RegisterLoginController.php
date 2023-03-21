@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // to access auth services
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Hash;
 
 class RegisterLoginController extends Controller
 {
@@ -23,11 +24,14 @@ class RegisterLoginController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'username' => 'required|string|max:25|unique:users'
+            'username' => 'required|string|max:25|unique:users',
+            'password' => 'required|string|min:3',
+
         ]);
 
         $user = User::create([
             'username' => $request->username,
+            'password' => Hash::make($request->password),
         ]);
 
         Auth::login($user);
@@ -43,13 +47,14 @@ class RegisterLoginController extends Controller
     public function authenticate(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'username' => ['required', 'string'],
+            'username' => ['username', 'required'],
+            'password' => ['required'],
         ]);
  
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
  
-            return redirect('/');
+            return redirect()->intended('/');
         }
  
         return back()->withErrors([
