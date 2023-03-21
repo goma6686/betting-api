@@ -7,10 +7,29 @@
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-        <div class="text-end" id="navbarSupportedContent">
-            <!-- Authentication Links -->
-                <a class="btn btn-outline-light me-2" href="#">Login</a>
-                <a class="btn btn-outline-light me-2" href="#">Register</a>
+        <div class="text-end">
+          @guest
+            <a class="btn btn-outline-light me-2" href="/login">Login</a>
+            <a class="btn btn-outline-light me-2" href="/register">Register</a>
+          @else
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              Username
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <form action="{{ route('logout') }}" method="POST">
+                  @csrf
+                  <a style="color: black;" class="dropdown-item secondary" href="{{ route('logout') }}"
+                  onclick="event.preventDefault();
+                                  this.closest('form').submit();">
+                  Logout
+                </a>
+                </form>
+              </li>
+            </ul>
+          </div>
+          @endguest
       </div>
     </div>
   </nav>
