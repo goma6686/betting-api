@@ -49,12 +49,10 @@ class RegisterLoginController extends Controller
     public function authenticate(Request $request)
     {
         $credentials = $request->validate([
-            'username' => 'required|string|max:25|unique:users',
+            'username' => 'required|string|max:25',
             'password' => 'required|string|min:3',
 
         ]);
-
-        return dd($credentials);
  
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
