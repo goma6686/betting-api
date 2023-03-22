@@ -18,15 +18,15 @@
                                 <label for="username" class="col-md-4 col-form-label text-md-end" style="color: white;">Username</label>
     
                                 <div class="col-md-6">
-                                    <input id="username" type="username" class="form-control name="username" required autofocus>
+                                    <input id="username" type="username" class="form-control" name="username" required autofocus>
                                 </div>
                             </div>
 
                             <div class="row mb-3">
-                                <label for="password" class="col-md-4 col-form-label text-md-end" style="color: white;">Password</label>
+                                <label for="password"  class="col-md-4 col-form-label text-md-end" style="color: white;">Password</label>
     
                                 <div class="col-md-6">
-                                    <input id="password" type="password" class="form-control name="password" required autofocus>
+                                    <input id="password" type="password" class="form-control" name="password" required autofocus>
                                 </div>
                             </div>
     

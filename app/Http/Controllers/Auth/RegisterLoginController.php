@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Auth; // to access auth services
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
+use App\Providers\RouteServiceProvider;
 
 class RegisterLoginController extends Controller
 {
@@ -44,25 +46,24 @@ class RegisterLoginController extends Controller
         return view('auth.login');
     }
 
-    public function authenticate(Request $request): RedirectResponse
+    public function authenticate(Request $request)
     {
         $credentials = $request->validate([
-            'username' => ['username', 'required'],
-            'password' => ['required'],
+            'username' => 'required|string|max:25|unique:users',
+            'password' => 'required|string|min:3',
+
         ]);
+
+        return dd($credentials);
  
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
  
-            return redirect()->intended('/');
+            return redirect('/');
         }
- 
-        return back()->withErrors([
-            'username' => 'The provided credentials do not match our records.',
-        ])->onlyInput('username');
     }
 
-    public function logout(Request $request): RedirectResponse
+    public function logout(Request $request)
     {
         Auth::logout();
 

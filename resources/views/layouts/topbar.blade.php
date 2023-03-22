@@ -14,7 +14,7 @@
           @else
           <div class="dropdown">
             <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-              Username
+              {{Auth::user()->username }}
             </button>
             <ul class="dropdown-menu">
               <li>
