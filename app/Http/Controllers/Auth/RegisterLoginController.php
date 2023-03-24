@@ -49,10 +49,11 @@ class RegisterLoginController extends Controller
         $credentials = $request->validate([
             'username' => 'required|string|max:25',
             'password' => 'required|string|min:3',
-
         ]);
+
+        //return dd($request->remember);
  
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials, $request->remember)) {
             $request->session()->regenerate();
  
             return redirect('/');
