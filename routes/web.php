@@ -21,9 +21,7 @@ use Illuminate\Validation\ValidationException;
 |
 */
 Route::get('/', [GameController::class, 'index']);
-Route::get('/BetGames', function () {
-    return view('betgames');
-});
+Route::get('/BetGames', [BetController::class, 'index']);
 
 Route::controller(RegisterLoginController::class)->group(function() {
 

@@ -7,23 +7,19 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class BetController extends Controller
 {
-    public function issuetoken (Request $request){
-        $request->validate([
-            'username' => 'required|string|max:25|unique:users',
-            'password' => 'required|string|min:3',
-        ]);
-     
-        $user = User::where('username', $request->username)->first();
-     
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'username' => ['The provided credentials are incorrect.'],
-            ]);
+    public function index (){
+        if (Auth::user()){
+            return view('betgames', ['token' => $this->issuetoken(Auth::user())]);
+        } else {
+            return view('betgames', ['token' => '-']);
         }
-     
-        return dd($user->createToken($request->device_name)->plainTextToken);
+    }
+
+    public function issuetoken (User $user){
+        return $user->createToken('token')->plainTextToken;
     }
 }
