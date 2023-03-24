@@ -14,9 +14,9 @@ class GameSeeder extends Seeder
      */
     public function run(): void
     {
-        \DB::table('games')->delete();
+        DB::table('games')->delete();
 
-        \DB::table('games')->insert([
+        DB::table('games')->insert([
                 ['id' => '1', 'game_name' => 'Lucky 7', 'banner_image' => 'L7_500x500.png'],
                 ['id' => '3', 'game_name' => 'Lucky 5', 'banner_image' => 'L5_500x500.png'],
                 ['id' => '5', 'game_name' => 'Bet On Poker', 'banner_image' => 'Poker_500x500.png'],

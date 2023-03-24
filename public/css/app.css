@@ -11,6 +11,18 @@ body {
     border-bottom:1px solid #919191;
 }
 
+label{
+  color: white;
+}
+
+.dropdown {
+  color: white;
+}
+
+.modal h5 {
+  color: black;
+}
+
 .container {
     margin-top: 2%;
     margin-bottom: 2%;

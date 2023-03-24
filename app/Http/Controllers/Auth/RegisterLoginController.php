@@ -5,11 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Auth; // to access auth services
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
-use App\Providers\RouteServiceProvider;
 
 class RegisterLoginController extends Controller
 {
@@ -46,25 +44,33 @@ class RegisterLoginController extends Controller
         return view('auth.login');
     }
 
-    public function authenticate(Request $request)
+    public function authenticate(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'username' => 'required|string|max:25|unique:users',
+            'username' => 'required|string|max:25',
             'password' => 'required|string|min:3',
-
         ]);
-
-        return dd($credentials);
  
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials, $request->remember)) {
             $request->session()->regenerate();
- 
+            /*if (Auth::user() instanceof \App\Models\User) {
+                return dd(Auth::user()->createToken($request->username));
+            }*/
+
             return redirect('/');
         }
+
+        return back()->withErrors([
+            'username' => 'The provided credentials do not match our records.',
+        ])->onlyInput('username');
     }
 
     public function logout(Request $request)
     {
+        if ($request->user()->tokens()){
+            $request->user()->tokens()->delete();
+        }
+        
         Auth::logout();
 
         $request->session()->invalidate();

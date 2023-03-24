@@ -16,6 +16,10 @@
             <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
               {{Auth::user()->username }}
             </button>
+            <button type="button" class="btn btn-secondary" data-id="{{Auth::user()->id}}" data-bs-toggle="modal" data-bs-target="#balance">
+              {{Auth::user()->balance}} €
+            </button>
+            @include('layouts.components.modal')
             <ul class="dropdown-menu">
               <li>
                 <form action="{{ route('logout') }}" method="POST">

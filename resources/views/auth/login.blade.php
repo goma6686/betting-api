@@ -15,7 +15,7 @@
                             @csrf
     
                             <div class="row mb-3">
-                                <label for="username" class="col-md-4 col-form-label text-md-end" style="color: white;">Username</label>
+                                <label for="username" class="col-md-4 col-form-label text-md-end">Username</label>
     
                                 <div class="col-md-6">
                                     <input id="username" type="username" class="form-control" name="username" required autofocus>
@@ -23,14 +23,36 @@
                             </div>
 
                             <div class="row mb-3">
-                                <label for="password"  class="col-md-4 col-form-label text-md-end" style="color: white;">Password</label>
+                                <label for="password"  class="col-md-4 col-form-label text-md-end">Password</label>
     
                                 <div class="col-md-6">
                                     <input id="password" type="password" class="form-control" name="password" required autofocus>
                                 </div>
                             </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6 offset-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="remember" {{ ('remember') ? 'checked' : '' }}>
     
-                            <div class="row">
+                                        <label class="form-check-label" for="remember">
+                                            Remember Me
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if ($errors->any())
+                                <div class="alert alert-danger">
+                                    <ul>
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+    
+                            <div class="row mb-0">
                                 <div class="col-md-8 offset-md-4">
                                     <button type="submit" class="btn btn-danger">
                                         Login

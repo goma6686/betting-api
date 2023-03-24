@@ -17,7 +17,7 @@
                     clientUrl: clientUrl,
                     apiUrl: 'integrations01.betgames.tv',
                     partnerCode: 'goda_test',
-                    partnerToken: '-',
+                    partnerToken: '{{ $token }}',
                     language: 'en',
                     timezone: '0',
                     defaultPage: '',

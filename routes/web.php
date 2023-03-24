@@ -2,8 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\Auth\BetController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\RegisterLoginController;
-use App\Http\Middleware\Authenticate;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Validation\ValidationException;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,14 +20,8 @@ use App\Http\Middleware\Authenticate;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-/*Route::get('/', function () {
-    return view('welcome');
-});*/
 Route::get('/', [GameController::class, 'index']);
-Route::get('/BetGames', function () {
-    return view('betgames');
-});
+Route::get('/BetGames', [BetController::class, 'index']);
 
 Route::controller(RegisterLoginController::class)->group(function() {
 
@@ -32,4 +31,19 @@ Route::controller(RegisterLoginController::class)->group(function() {
     Route::get('/login', 'login')->name('login');
     Route::post('/authenticate', 'authenticate')->name('authenticate');
     Route::post('/logout', 'logout')->name('logout');
+});
+
+Route::group(['middleware' => 'auth'], function(){
+    Route::post('/update-balance', [UserController::class, 'update'])->name('update-balance');
+
+    //sanctum
+    Route::middleware(['auth:sanctum'])->group(function(){
+
+        Route::get('/user', function (Request $request) {
+            return $request->user();
+        });
+
+        Route::post('/sanctum/token', [BetController::class, 'issuetoken'])->name('issue-token');
+    });
+    
 });
