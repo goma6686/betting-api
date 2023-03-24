@@ -50,12 +50,13 @@ class RegisterLoginController extends Controller
             'username' => 'required|string|max:25',
             'password' => 'required|string|min:3',
         ]);
-
-        //return dd($request->remember);
  
         if (Auth::attempt($credentials, $request->remember)) {
             $request->session()->regenerate();
- 
+            /*if (Auth::user() instanceof \App\Models\User) {
+                return dd(Auth::user()->createToken($request->username));
+            }*/
+
             return redirect('/');
         }
 
@@ -66,6 +67,10 @@ class RegisterLoginController extends Controller
 
     public function logout(Request $request)
     {
+        if ($request->user()->tokens()){
+            $request->user()->tokens()->delete();
+        }
+        
         Auth::logout();
 
         $request->session()->invalidate();

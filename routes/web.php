@@ -2,9 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GameController;
-use App\Http\Controllers\Auth\RegisterLoginController;
+use App\Http\Controllers\Auth\BetController;
 use App\Http\Controllers\UserController;
-use App\Http\Middleware\Authenticate;
+use App\Http\Controllers\Auth\RegisterLoginController;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Validation\ValidationException;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,4 +37,15 @@ Route::controller(RegisterLoginController::class)->group(function() {
 
 Route::group(['middleware' => 'auth'], function(){
     Route::post('/update-balance', [UserController::class, 'update'])->name('update-balance');
+
+    //sanctum
+    Route::middleware(['auth:sanctum'])->group(function(){
+
+        Route::get('/user', function (Request $request) {
+            return $request->user();
+        });
+
+        Route::post('/sanctum/token', [BetController::class, 'issuetoken'])->name('issue-token');
+    });
+    
 });
