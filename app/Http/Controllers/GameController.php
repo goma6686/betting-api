@@ -14,4 +14,8 @@ class GameController extends Controller
         $games = Game::all();
         return view('welcome', ['games' => $games]);
     }
+
+    public function show(){
+        return Game::all();
+    }
 }

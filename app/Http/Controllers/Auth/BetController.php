@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class BetController extends Controller
 {
@@ -23,35 +24,48 @@ class BetController extends Controller
         return $user->createToken('token')->plainTextToken;
     }
 
+    public function test(){
+        $response['status'] = 'ok';
+        return response()->json($response);
+    }
+
     public function ping(Request $request){
         $xmlData = $request->getContent();
         $xml = simplexml_load_string($xmlData);
 
         $method = (string) $xml->method;
         $token = (string) $xml->token;
-        $requestId = (string) $xml->request_id;
         $time = (string) $xml->time;
-        $signature = (string) $xml->signature;
         $params = (array) $xml->params;
+        $signature = (string) $xml->signature;
 
-        $sig = hash_hmac('sha256', $requestId, 'CCHWS-ZIFJV-HEAOB-DV336');
-
-        $xmlResponse = new \SimpleXMLElement('<root/>');
-        $xmlResponse->addChild('response', $sig);
-        return response($xmlResponse->asXML())->header('Content-Type', 'application/xml');
-        /*if () {
+        $secret = "CCHWS-ZIFJV-HEAOB-DV336";
+        $calc_string = "method" . $method . "token" . $token . "time" . $time . $secret;
+        if (md5($calc_string) === $signature){
             $success = '1';
             $error_code = '0';
             $error_text = '';
+            $time = time();
+            //$time = '1423124663';
+            $signature = md5("method" . $method . "token" . $token . "success" . $success . "error_code" . $error_code . "error_texttime" . $time . $secret);
         } else {
-            $response = '<error>unknown method</error>';
+            $success = '0';
+            $error_code = '1';
+            $error_text = 'wrong_signature';
+            $time = time();
+            //$time = '1423124663';
+            $signature = md5("method" . $method . "token" . $token . "success" . $success . "error_code" . $error_code . "error_texttime" . $time . $secret);
         }
 
-        $sig = hash_hmac('sha256', $requestId, 'CCHWS-ZIFJV-HEAOB-DV336');
-
         $xmlResponse = new \SimpleXMLElement('<root/>');
-        $xmlResponse->addChild('response', $response);
-        
-        return response($xmlResponse->asXML())->header('Content-Type', 'application/xml');*/
+        $xmlResponse->addChild('method', $method);
+        $xmlResponse->addChild('token', $token);
+        $xmlResponse->addChild('success', $success);
+        $xmlResponse->addChild('error_code', $error_code);
+        $xmlResponse->addChild('error_text', $error_text);
+        $xmlResponse->addChild('time', $time);
+        $xmlResponse->addChild('signature', $signature);
+
+        return response($xmlResponse->asXML())->header('Content-Type', 'application/xml');
     }
 }

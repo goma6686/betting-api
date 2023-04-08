@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Http\Controllers\Auth\BetController;
+use App\Http\Controllers\GameController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,8 +22,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/user/{id}', function (string $id) {
-    return new UserResource(User::findOrFail($id));
-});
-
 Route::post('/ping', [BetController::class, 'ping']);
+Route::get('/test', [GameController::class, 'show']);
