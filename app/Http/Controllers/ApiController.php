@@ -15,7 +15,6 @@ class ApiController extends Controller
 
         $token = (string) $xml->token;
         $requestId = (string) $xml->request_id;
-        $time = (string) $xml->time;
         $signature = (string) $xml->signature;
         $params = (string) $xml->params;
 
@@ -25,11 +24,13 @@ class ApiController extends Controller
         $error_code = 0;
         $error_text = '';
 
-        $calc_string = 'test-string';
-
         switch ($method) {
             case "ping":
-              $this->ping($method, $secret, $requestId, $time, $signature, $success, $error_code, $error_text, $calc_string);
+              if(!($this->ping($secret, $requestId, $signature))){
+                $success = '0';
+                $error_code = '1';
+                $error_text = 'wrong_signature';
+              };
               break;
         }
         $xmlResponse = new \SimpleXMLElement('<root/>');
@@ -39,29 +40,19 @@ class ApiController extends Controller
         $xmlResponse->addChild('error_code', $error_code);
         $xmlResponse->addChild('error_text', $error_text);
         $xmlResponse->addChild('params', $params);
-        $xmlResponse->addChild('response_id', $requestId);
+        $xmlResponse->addChild('response_id', hash_hmac('sha256', $requestId.$secret, $secret));
         $xmlResponse->addChild('time', time());
-        $xmlResponse->addChild('signature', $signature);
+        $xmlResponse->addChild('signature', hash_hmac('sha256', hash_hmac('sha256', $requestId, $secret), $secret));
 
         return response($xmlResponse->asXML())->header('Content-Type', 'application/xml');
     }
 
-    public function ping($method, $secret, $requestId, $signature, $success, $error_code, $error_text, $calc_string){
+    public function ping($secret, $requestId, $signature){
 
         if (hash_hmac('sha256', $requestId, $secret) === $signature){
-            $requestId = hash_hmac('md5', $calc_string , $secret);
-            $signature = hash_hmac('sha256', $requestId, $secret);
+            return true;
         } else {
-            $success = '0';
-            $error_code = '1';
-            $error_text = 'wrong_signature';
-            $requestId = hash_hmac('md5', $calc_string , $secret);
-            $signature = hash_hmac('sha256', $requestId, $secret);
+            return false;
         }
-        return array($method, $secret, $requestId, $signature, $success, $error_code, $error_text);
-    }
-
-    private function signature($requestId, $secret){
-        return hash_hmac('sha256', $requestId, $secret);
     }
 }
