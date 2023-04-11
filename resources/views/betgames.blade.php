@@ -19,7 +19,7 @@
                     partnerCode: 'goda_test',
                     partnerToken: '{{ $token }}',
                     language: 'en',
-                    timezone: '0',
+                    timezone: '3',
                     defaultPage: '',
                     defaultGame: '7',
                 });
