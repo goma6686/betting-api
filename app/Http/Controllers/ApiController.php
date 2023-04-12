@@ -16,41 +16,64 @@ class ApiController extends Controller
         $token = (string) $xml->token;
         $requestId = (string) $xml->request_id;
         $signature = (string) $xml->signature;
+        $time = (string) $xml->time;
         $params = (string) $xml->params;
 
         $secret = "CCHWS-ZIFJV-HEAOB-DV336";
 
-        $responseId = $this->guidv4();
+        $responseId = $this->generate_UUID();
 
-        $success = 1;
-        $error_code = 0;
-        $error_text = '';
-
-        switch ($method) {
-            case "ping":
-              if(!($this->ping($secret, $requestId, $signature))){
-                $success = '0';
-                $error_code = '1';
-                $error_text = 'wrong_signature';
-              };
-              break;
+        $response_errors = $this->check_signature($secret, $requestId, $signature);
+        if ($this->check_signature($secret, $requestId, $signature)){
+            $response_errors = $this->error_msg("1", "0", "");
+            if ($this->check_time($time)){
+                $response_errors = $this->error_msg("1", "0", "");
+            } else {
+                $response_errors = $this->error_msg("0", "2", "request is expired");
+            }
+        } else {
+            $response_errors = $this->error_msg("0", "1", "wrong signature");
         }
+
         $xmlResponse = new \SimpleXMLElement('<root/>');
         $xmlResponse->addChild('method', $method);
         $xmlResponse->addChild('token', $token);
-        $xmlResponse->addChild('success', $success);
-        $xmlResponse->addChild('error_code', $error_code);
-        $xmlResponse->addChild('error_text', $error_text);
+        $xmlResponse->addChild('success', $response_errors[0]);
+        $xmlResponse->addChild('error_code', $response_errors[1]);
+        $xmlResponse->addChild('error_text', $response_errors[2]);
         $xmlResponse->addChild('params', $params);
         $xmlResponse->addChild('response_id', $responseId); //UUID
-        //$xmlResponse->addChild('time', time());
-        $xmlResponse->addChild('time', (string) $xml->time);
+        $xmlResponse->addChild('time', time());
         $xmlResponse->addChild('signature', hash_hmac('sha256', $responseId, $secret));
 
         return response($xmlResponse->asXML())->header('Content-Type', 'application/xml');
     }
 
-    function guidv4($data = null) {
+    function error_msg($success_code, $code, $text){
+        $success = $success_code;
+        $error_code = $code;
+        $error_text = $text;
+        return array($success, $error_code, $error_text);
+    }
+
+    function check_signature($secret, $requestId, $signature){ //add time check
+
+        if (hash_hmac('sha256', $requestId, $secret) === $signature){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function check_time($time){
+        if (time() - $time <= 60){ 
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function generate_UUID($data = null) {
         // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
         $data = $data ?? random_bytes(16);
         assert(strlen($data) == 16);
@@ -62,14 +85,5 @@ class ApiController extends Controller
     
         // Output the 36 character UUID.
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
-    }    
-
-    public function ping($secret, $requestId, $signature){
-
-        if (hash_hmac('sha256', $requestId, $secret) === $signature){
-            return true;
-        } else {
-            return false;
-        }
     }
 }
