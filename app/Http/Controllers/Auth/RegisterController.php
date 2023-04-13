@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth; // to access auth services
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\RedirectResponse;
 
 class RegisterController extends Controller
 {
@@ -15,7 +16,7 @@ class RegisterController extends Controller
         return view('auth.register');
     }
 
-    public function store(Request $request)
+    public function store(Request $request) : RedirectResponse
     {
         $request->validate([
             'username' => 'required|string|max:25|unique:users',
@@ -28,14 +29,10 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $this->issuetoken($user);
+        //$this->issuetoken($user);
 
         Auth::login($user);
 
         return redirect('/');
-    }
-
-    public function issuetoken (User $user){
-        return $user->createToken('token')->plainTextToken;
     }
 }

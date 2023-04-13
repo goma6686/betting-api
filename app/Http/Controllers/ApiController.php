@@ -49,28 +49,23 @@ class ApiController extends Controller
         return response($xmlResponse->asXML())->header('Content-Type', 'application/xml');
     }
 
+    function check_signature($secret, $requestId, $signature){
+        return hash_hmac('sha256', $requestId, $secret) === $signature ? true : false;
+    }
+
+    function check_time($time){
+        return time() - $time <= 60 ? true : false;
+    }
+
+    function check_token($token){
+        //return $token === $token ? true : false; //TO DO
+    }
+
     function error_msg($success_code, $code, $text){
         $success = $success_code;
         $error_code = $code;
         $error_text = $text;
         return array($success, $error_code, $error_text);
-    }
-
-    function check_signature($secret, $requestId, $signature){ //add time check
-
-        if (hash_hmac('sha256', $requestId, $secret) === $signature){
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    function check_time($time){
-        if (time() - $time <= 60){ 
-            return true;
-        } else {
-            return false;
-        }
     }
 
     function generate_UUID($data = null) {
