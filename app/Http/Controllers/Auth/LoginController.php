@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // to access auth services
 use Illuminate\Http\RedirectResponse;
-use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -15,7 +14,7 @@ class LoginController extends Controller
         return view('auth.login');
     }
 
-    public function authenticate(Request $request): RedirectResponse
+    public function authenticate(Request $request) : RedirectResponse
     {
         $credentials = $request->validate([
             'username' => 'required|string|max:25',
@@ -24,11 +23,6 @@ class LoginController extends Controller
  
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-
-            if (Auth::user() instanceof \App\Models\User) {
-                $this->issuetoken(Auth::user());
-            }
-
             return redirect('/');
         }
 
@@ -41,16 +35,13 @@ class LoginController extends Controller
     {
         $request->user()->tokens()->delete();
         
-        Auth::logout();
+        //Auth::logout();
+        Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
         return redirect('/');
-    }
-
-    public function issuetoken (User $user){
-        return $user->createToken('token')->plainTextToken;
     }
 }

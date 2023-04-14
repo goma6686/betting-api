@@ -18,7 +18,6 @@ use App\Http\Controllers\Auth\RegisterController;
 |
 */
 Route::get('/', [GameController::class, 'index']);
-Route::get('/BetGames', [BetController::class, 'index']);
 
 Route::controller(RegisterController::class)->group(function() {
     Route::post('/store', 'store')->name('store');
@@ -26,10 +25,11 @@ Route::controller(RegisterController::class)->group(function() {
 });
 Route::controller(LoginController::class)->group(function() {
     Route::get('/login', 'login')->name('login');
-    Route::post('/logout', 'logout')->name('logout');
     Route::post('/authenticate', 'authenticate')->name('authenticate');
 });
 
-Route::group(['middleware' => 'auth'], function(){
+Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::post('/update-balance', [UserController::class, 'update'])->name('update-balance');
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::get('/BetGames', [BetController::class, 'index']);
 });

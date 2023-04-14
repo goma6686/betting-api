@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class ApiController extends Controller
 {
@@ -35,13 +36,30 @@ class ApiController extends Controller
             $response_errors = $this->error_msg("0", "1", "wrong signature");
         }
 
+        switch($method){
+            case "get_account_details":
+                if($this->check_token($token)){
+                    $response_errors = $this->error_msg("1", "0", "");
+                    $info = PersonalAccessToken::findToken($token)->tokenable;
+                } else {
+                    $response_errors = $this->error_msg("0", "3", "invalid token");
+                }
+                break;
+        }
+
         $xmlResponse = new \SimpleXMLElement('<root/>');
         $xmlResponse->addChild('method', $method);
         $xmlResponse->addChild('token', $token);
         $xmlResponse->addChild('success', $response_errors[0]);
         $xmlResponse->addChild('error_code', $response_errors[1]);
         $xmlResponse->addChild('error_text', $response_errors[2]);
-        $xmlResponse->addChild('params', $params);
+
+        $params = $xmlResponse->addChild('params');
+        $params->addChild('user_id', $info['id']);
+        $params->addChild('username', $info['username']);
+        $params->addChild('currency', 'EUR');
+        $params->addChild('info', $token);
+
         $xmlResponse->addChild('response_id', $responseId); //UUID
         $xmlResponse->addChild('time', time());
         $xmlResponse->addChild('signature', hash_hmac('sha256', $responseId, $secret));
@@ -49,28 +67,23 @@ class ApiController extends Controller
         return response($xmlResponse->asXML())->header('Content-Type', 'application/xml');
     }
 
+    function check_signature($secret, $requestId, $signature){
+        return hash_hmac('sha256', $requestId, $secret) === $signature ? true : false;
+    }
+
+    function check_time($time){
+        return time() - $time <= 60 ? true : false;
+    }
+
+    function check_token($sactumToken){
+        return PersonalAccessToken::findToken($sactumToken) ? true : false;
+    }
+
     function error_msg($success_code, $code, $text){
         $success = $success_code;
         $error_code = $code;
         $error_text = $text;
         return array($success, $error_code, $error_text);
-    }
-
-    function check_signature($secret, $requestId, $signature){ //add time check
-
-        if (hash_hmac('sha256', $requestId, $secret) === $signature){
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    function check_time($time){
-        if (time() - $time <= 60){ 
-            return true;
-        } else {
-            return false;
-        }
     }
 
     function generate_UUID($data = null) {

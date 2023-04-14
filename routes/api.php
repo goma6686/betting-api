@@ -21,4 +21,3 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/betgames', [ApiController::class, 'method']);
-Route::get('/test', [GameController::class, 'show']);
