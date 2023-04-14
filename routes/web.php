@@ -18,7 +18,6 @@ use App\Http\Controllers\Auth\RegisterController;
 |
 */
 Route::get('/', [GameController::class, 'index']);
-Route::get('/BetGames', [BetController::class, 'index']);
 
 Route::controller(RegisterController::class)->group(function() {
     Route::post('/store', 'store')->name('store');

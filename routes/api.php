@@ -20,8 +20,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware('auth:sanctum')->get('/user-token', function (Request $request) {
-    //return $request->user();
-});
-
 Route::post('/betgames', [ApiController::class, 'method']);

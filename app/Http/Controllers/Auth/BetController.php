@@ -9,15 +9,13 @@ use App\Models\User;
 class BetController extends Controller
 {
     public function index (){
-        if (Auth::user()){
-            return view('betgames', ['token' => $this->issuetoken(Auth::user())->plainTextToken]);
-        } else {
-            $token = "-";
-        }
-        return view('betgames')->with('token', $token);
+        return view('betgames', ['token' => $this->issuetoken(Auth::user())->plainTextToken]);
     }
 
     public function issuetoken (User $user){
+        if (request()->user()->tokens()){
+            request()->user()->tokens()->delete();
+        }
         return $user->createToken('token');
     }
 }
