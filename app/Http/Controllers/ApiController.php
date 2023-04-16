@@ -45,6 +45,12 @@ class ApiController extends Controller
                     $response_errors = $this->error_msg("0", "3", "invalid token");
                 }
                 break;
+            case "refresh_token":
+                if($this->check_token($token)){
+                    $response_errors = $this->error_msg("1", "0", "");
+                } else {
+                    $response_errors = $this->error_msg("0", "3", "invalid token");
+                }
         }
 
         $xmlResponse = new \SimpleXMLElement('<root/>');
