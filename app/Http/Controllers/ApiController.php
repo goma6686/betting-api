@@ -39,10 +39,9 @@ class ApiController extends Controller
                 $response_errors = $this->error_msg("0", "3", "invalid token");
             }
         }
-        if ($arr['method'] === "ping" || $arr['method'] === "refresh_token") $info = null;
 
         return response((
-            $this->xml_response($arr['method'], $arr['token'], $response_errors, $info, $arr['params'], $secret))
+            $this->xml_response($arr['method'], $arr['token'], $response_errors, $info ?? null, $arr['params'], $secret))
                 ->asXML())
                 ->header('Content-Type', 'application/xml');
     }

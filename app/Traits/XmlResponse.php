@@ -5,7 +5,7 @@ use Illuminate\Support\Str;
 
 trait XmlResponse
 {
-    protected function xml_response($method, $token, $response_errors, ?string $info, $params, $secret){
+    protected function xml_response($method, $token, $response_errors, $info, $params, $secret){
         $responseId = Str::uuid()->toString();
 
         $xmlResponse = new \SimpleXMLElement('<root/>');
