@@ -4,53 +4,47 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
-use App\Traits\XmlResponse; 
+use App\Traits\XmlResponse;
+use App\Traits\XmlRequest; 
 
 class ApiController extends Controller
 {
-    use XmlResponse;
+    use XmlResponse, XmlRequest;
 
     public function method(Request $request){
-        $xmlData = $request->getContent();
-        
-        $xml = simplexml_load_string($xmlData);
-
-        $method = (string) $xml->method;
-
-        $token = (string) $xml->token;
-        $requestId = (string) $xml->request_id;
-        $signature = (string) $xml->signature;
-        $time = (string) $xml->time;
-        $params = (string) $xml->params;
+        $arr = $this->xml_request($request->getContent());
 
         $secret = "CCHWS-ZIFJV-HEAOB-DV336";
 
 
-        if (!($this->check_signature($secret, $requestId, $signature))){
+        if (!($this->check_signature($secret, $arr['requestId'], $arr['signature']))){
             $response_errors = $this->error_msg("0", "1", "wrong signature");
-            if (!($this->check_time($time))){
+            if (!($this->check_time($arr['time']))){
                 $response_errors = $this->error_msg("0", "2", "request is expired");
             }
         } else {
             $response_errors = $this->error_msg("1", "0", "");
         }
 
-        if($method != 'ping'){
-            if($this->check_token($token)){
+        if($arr['method'] != 'ping'){
+            if($this->check_token($arr['token'])){
                 $response_errors = $this->error_msg("1", "0", "");
 
-                switch($method){
+                switch($arr['method']){
                     case "get_account_details":
-                        $info = PersonalAccessToken::findToken($token)->tokenable;
+                        $info = PersonalAccessToken::findToken($arr['token'])->tokenable;
                         break;
                 }
             } else {
                 $response_errors = $this->error_msg("0", "3", "invalid token");
             }
         }
-        if ($method === "ping" || $method === "refresh_token") $info = null;
+        if ($arr['method'] === "ping" || $arr['method'] === "refresh_token") $info = null;
 
-        return response(($this->xml_response($method, $token, $response_errors, $info, $params, $secret))->asXML())->header('Content-Type', 'application/xml');
+        return response((
+            $this->xml_response($arr['method'], $arr['token'], $response_errors, $info, $arr['params'], $secret))
+                ->asXML())
+                ->header('Content-Type', 'application/xml');
     }
 
     function check_signature($secret, $requestId, $signature){
@@ -58,8 +52,7 @@ class ApiController extends Controller
     }
 
     function check_time($time){
-        //return time() - $time <= 60 ? true : false;
-        return true;
+        return time() - $time <= 60 ? true : false;
     }
 
     function check_token($sactumToken){
