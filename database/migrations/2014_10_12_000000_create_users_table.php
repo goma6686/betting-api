@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('password');
             $table->float('balance')->unsigned()->default(0.0);
             $table->rememberToken();
+            $table->char('api_token', 60)->nullable()->after('remember_token');
             $table->timestamps();
         });
     }

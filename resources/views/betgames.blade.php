@@ -9,9 +9,7 @@
         <div id="betgames_div_iframe"></div>
         <script>
             const clientUrl = 'https://integrations01-webiframe.betgames.tv';
-            //const sanctumToken = localStorage.getItem('token') || document.cookie.split('; ').find(row => row.startsWith('laravel_token=')).split('=')[1];
 
-            console.log('hiii');
             const script = document.createElement('script');
     
             script.onload = function () {
