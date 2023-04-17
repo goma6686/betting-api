@@ -26,10 +26,10 @@ Route::controller(RegisterController::class)->group(function() {
 Route::controller(LoginController::class)->group(function() {
     Route::get('/login', 'login')->name('login');
     Route::post('/authenticate', 'authenticate')->name('authenticate');
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
 
 Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::post('/update-balance', [UserController::class, 'update'])->name('update-balance');
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/BetGames', [BetController::class, 'index']);
 });
