@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
+use App\Traits\XmlResponse; 
 
 class ApiController extends Controller
 {
+    use XmlResponse;
+
     public function method(Request $request){
         $xmlData = $request->getContent();
         
@@ -22,23 +25,20 @@ class ApiController extends Controller
 
         $secret = "CCHWS-ZIFJV-HEAOB-DV336";
 
-        $responseId = $this->generate_UUID();
 
-        $response_errors = $this->check_signature($secret, $requestId, $signature);
-        if ($this->check_signature($secret, $requestId, $signature)){
-            $response_errors = $this->error_msg("1", "0", "");
-
+        if (!($this->check_signature($secret, $requestId, $signature))){
+            $response_errors = $this->error_msg("0", "1", "wrong signature");
             if (!($this->check_time($time))){
                 $response_errors = $this->error_msg("0", "2", "request is expired");
             }
         } else {
-            $response_errors = $this->error_msg("0", "1", "wrong signature");
+            $response_errors = $this->error_msg("1", "0", "");
         }
 
         if($method != 'ping'){
             if($this->check_token($token)){
                 $response_errors = $this->error_msg("1", "0", "");
-                
+
                 switch($method){
                     case "get_account_details":
                         $info = PersonalAccessToken::findToken($token)->tokenable;
@@ -48,29 +48,9 @@ class ApiController extends Controller
                 $response_errors = $this->error_msg("0", "3", "invalid token");
             }
         }
+        if ($method === "ping" || $method === "refresh_token") $info = null;
 
-        $xmlResponse = new \SimpleXMLElement('<root/>');
-        $xmlResponse->addChild('method', $method);
-        $xmlResponse->addChild('token', $token);
-        $xmlResponse->addChild('success', $response_errors[0]);
-        $xmlResponse->addChild('error_code', $response_errors[1]);
-        $xmlResponse->addChild('error_text', $response_errors[2]);
-        
-        if($method == 'ping'){
-            $xmlResponse->addChild('params', $params);
-        } else {
-            $params = $xmlResponse->addChild('params');
-            $params->addChild('user_id', $info['id']);
-            $params->addChild('username', $info['username']);
-            $params->addChild('currency', 'EUR');
-            $params->addChild('info', $token);
-        }
-
-        $xmlResponse->addChild('response_id', $responseId); //UUID
-        $xmlResponse->addChild('time', time());
-        $xmlResponse->addChild('signature', hash_hmac('sha256', $responseId, $secret));
-
-        return response($xmlResponse->asXML())->header('Content-Type', 'application/xml');
+        return response(($this->xml_response($method, $token, $response_errors, $info, $params, $secret))->asXML())->header('Content-Type', 'application/xml');
     }
 
     function check_signature($secret, $requestId, $signature){
@@ -91,19 +71,5 @@ class ApiController extends Controller
         $error_code = $code;
         $error_text = $text;
         return array($success, $error_code, $error_text);
-    }
-
-    function generate_UUID($data = null) {
-        // Generate 16 bytes (128 bits) of random data or use the data passed into the function.
-        $data = $data ?? random_bytes(16);
-        assert(strlen($data) == 16);
-    
-        // Set version to 0100
-        $data[6] = chr(ord($data[6]) & 0x0f | 0x40);
-        // Set bits 6-7 to 10
-        $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
-    
-        // Output the 36 character UUID.
-        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 }
