@@ -26,4 +26,11 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    protected static function issuetoken (User $user){
+        if ($user->tokens()){
+            $user->tokens()->delete();
+        }
+        return $user->createToken('token')->plainTextToken;
+    }
 }

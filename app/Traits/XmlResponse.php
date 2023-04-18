@@ -5,33 +5,34 @@ use Illuminate\Support\Str;
 
 trait XmlResponse
 {
-    protected function xml_response($method, $token, $response_errors, $info, $params, $secret){
+    protected function xml_response($method, $token, $response, $info, $secret){
         $responseId = Str::uuid()->toString();
 
         $xmlResponse = new \SimpleXMLElement('<root/>');
         $xmlResponse->addChild('method', $method);
         $xmlResponse->addChild('token', $token);
-        $xmlResponse->addChild('success', $response_errors[0]);
-        $xmlResponse->addChild('error_code', $response_errors[1]);
-        $xmlResponse->addChild('error_text', $response_errors[2]);
-        
-        if($method === 'ping' || $method === 'refresh_token'){
-            $xmlResponse->addChild('params', $params);
-        } else {
+        $xmlResponse->addChild('success', $response['success']);
+        $xmlResponse->addChild('error_code', $response['error_code']);
+        $xmlResponse->addChild('error_text', $response['error_text']);
+
+        if($response['success'] !== '0'){
             $params = $xmlResponse->addChild('params');
 
-            if ($method === 'get_account_details'){
-                $params->addChild('user_id', $info['id']);
-                $params->addChild('username', $info['username']);
-                $params->addChild('currency', 'EUR');
-                $params->addChild('info', $token);
+            switch ($method){
+                case 'get_account_details':
+                    $params->addChild('user_id', $info['id']);
+                    $params->addChild('username', $info['username']);
+                    $params->addChild('currency', 'EUR');
+                    $params->addChild('info', $token);
+                    break;
 
-            } else if ($method === 'request_new_token'){
-                $params->addChild('new_token', 'NEW TOKEN HERE');
+                case 'request_new_token':
+                    $params->addChild('new_token', $token); //SUKURTI NAUJA??
+                    break;
 
-            } else if ($method === 'get_balance') {
-                $params->addChild('balance', 'PLAYER BALANCE');
-
+                case 'get_balance':
+                    $params->addChild('balance', 'PLAYER BALANCE');
+                    break;
             }
         }
 

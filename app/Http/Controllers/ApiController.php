@@ -9,30 +9,38 @@ use App\Traits\XmlRequest;
 
 class ApiController extends Controller
 {
+    private const TOKEN_EXPIRATION_TIME = 1;
+
     use XmlResponse, XmlRequest;
 
     public function method(Request $request){
-        $arr = $this->xml_request($request->getContent());
+        $req_array = $this->xml_request($request->getContent());
 
         $secret = "CCHWS-ZIFJV-HEAOB-DV336";
 
 
-        if (!($this->check_signature($secret, $arr['requestId'], $arr['signature']))){
+        if (!($this->check_signature($secret, $req_array['requestId'], $req_array['signature']))){
             $response_errors = $this->error_msg("0", "1", "wrong signature");
-            if (!($this->check_time($arr['time']))){
+
+            if (!($this->check_time($req_array['time']))){
                 $response_errors = $this->error_msg("0", "2", "request is expired");
             }
         } else {
             $response_errors = $this->error_msg("1", "0", "");
         }
 
-        if($arr['method'] != 'ping'){
-            if($this->check_token($arr['token'])){
+        if($req_array['method'] != 'ping'){
+            if($this->check_token($req_array['token'])){
                 $response_errors = $this->error_msg("1", "0", "");
 
-                switch($arr['method']){
+                switch($req_array['method']){
                     case "get_account_details":
-                        $info = PersonalAccessToken::findToken($arr['token'])->tokenable;
+                        $info = PersonalAccessToken::findToken($req_array['token'])->tokenable;
+                        break;
+                    case "refresh_token":
+                    case "request_new_token":
+                        if (config('sanctum.expiration') )
+                        config(['sanctum.expiration' => self::TOKEN_EXPIRATION_TIME]);
                         break;
                 }
             } else {
@@ -41,7 +49,7 @@ class ApiController extends Controller
         }
 
         return response((
-            $this->xml_response($arr['method'], $arr['token'], $response_errors, $info ?? null, $arr['params'], $secret))
+            $this->xml_response($req_array['method'], $req_array['token'], $response_errors, $info ?? null, $secret))
                 ->asXML())
                 ->header('Content-Type', 'application/xml');
     }
@@ -59,9 +67,9 @@ class ApiController extends Controller
     }
 
     function error_msg($success_code, $code, $text){
-        $success = $success_code;
-        $error_code = $code;
-        $error_text = $text;
-        return array($success, $error_code, $error_text);
+        $response['success'] = $success_code;
+        $response['error_code'] = $code;
+        $response['error_text'] = $text;
+        return $response;
     }
 }
