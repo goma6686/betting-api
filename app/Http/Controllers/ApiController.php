@@ -75,7 +75,7 @@ class ApiController extends Controller
     }
 
     function refresh_token($sactumToken){
-        DB::table('personal_access_tokens')->where('id', PersonalAccessToken::findToken($sactumToken)['tokenable_id'])->update(['created_at' => now()]);
+        DB::table('personal_access_tokens')->where('id', PersonalAccessToken::findToken($sactumToken)['id'])->update(['created_at' => now()]);
     }
 
     function error_msg($success_code, $code, $text){
