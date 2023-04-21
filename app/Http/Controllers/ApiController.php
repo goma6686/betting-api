@@ -34,13 +34,25 @@ class ApiController extends Controller
 
                 switch($req_array['method']){
                     case "get_balance":
+                        $info['balance'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['balance'];
                     case "get_account_details":
-                        $info = PersonalAccessToken::findToken($req_array['token'])->tokenable; //TODO check expiration
+                        $info['id'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['id'];
+                        $info['username'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['username'];
+                        $info['currency'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['currency'];
+                        $info['info'] = (PersonalAccessToken::findToken($req_array['token'])['token']);
                         break;
 
                     case "transaction_bet_payin":
-                        if(Transaction::where('transaction_id', '=', $req_array['transaction_id'])){
-                            //
+                        if(Transaction::where('transaction_id', '=', $req_array['transaction_id'])->exists()){
+                            //1.refresh token
+                            //2.success with already processed = 1
+                            //3.DO NOT withdraw money
+                        } else if((PersonalAccessToken::findToken($req_array['token'])->tokenable)['balance'] >= $req_array['amount']) {
+                            //1.refresh token
+                            //2.deduct from balance
+                            //3.success with actual balance
+                        } else {
+                            $response_errors = $this->error_msg("0", "703", "insufficient balance");
                         };
                         break;
                 }

@@ -23,8 +23,8 @@ trait XmlResponse
                 case 'get_account_details':
                     $params->addChild('user_id', $info['id']);
                     $params->addChild('username', $info['username']);
-                    $params->addChild('currency', 'EUR');
-                    $params->addChild('info', $token);
+                    $params->addChild('currency', $info['currency']);
+                    $params->addChild('info', $info['info']);
                     break;
 
                 case 'get_balance':
