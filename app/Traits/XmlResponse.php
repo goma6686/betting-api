@@ -26,6 +26,10 @@ trait XmlResponse
                     $params->addChild('info', $token);
                     break;
 
+                case "get_balance":
+                    $params->addChild('balance', $info['balance']);
+                    break;
+
                 case 'request_new_token':
                     $params->addChild('new_token', $token); //SUKURTI NAUJA??
                     break;

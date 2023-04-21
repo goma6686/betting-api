@@ -34,7 +34,7 @@ class ApiController extends Controller
                 switch($req_array['method']){
                     case "get_balance":
                     case "get_account_details":
-                        $info = PersonalAccessToken::findToken($req_array['token'])->tokenable;
+                        $info = PersonalAccessToken::findToken($req_array['token'])->tokenable; //TODO check expiration
                         break;
                         
                     case "refresh_token":
