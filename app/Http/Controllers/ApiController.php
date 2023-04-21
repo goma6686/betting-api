@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
+use App\Models\Transaction;
 use App\Traits\XmlResponse;
-use App\Traits\XmlRequest; 
+use App\Traits\XmlRequest;
+use Illuminate\Support\Facades\DB;
 
 class ApiController extends Controller
 {
@@ -29,20 +31,22 @@ class ApiController extends Controller
 
         if($req_array['method'] !== 'ping'){
             if($this->check_token($req_array['token'])){
-                $response_errors = $this->error_msg("1", "0", "");
 
                 switch($req_array['method']){
                     case "get_balance":
                     case "get_account_details":
                         $info = PersonalAccessToken::findToken($req_array['token'])->tokenable; //TODO check expiration
                         break;
-                        
-                    case "refresh_token":
-                    case "request_new_token":
-                        if (config('sanctum.expiration') )
-                        config(['sanctum.expiration' => self::TOKEN_EXPIRATION_TIME]);
+
+                    case "transaction_bet_payin":
+                        if(Transaction::where('transaction_id', '=', $req_array['transaction_id'])){
+                            //
+                        };
                         break;
                 }
+                $this->refresh_token($req_array['token']);
+                $response_errors = $this->error_msg("1", "0", "");
+
             } else {
                 $response_errors = $this->error_msg("0", "3", "invalid token");
             }
@@ -64,7 +68,14 @@ class ApiController extends Controller
     }
 
     function check_token($sactumToken){
-        return PersonalAccessToken::findToken($sactumToken) ? true : false;
+        return (
+            PersonalAccessToken::findToken($sactumToken) && //does it exist
+            PersonalAccessToken::findToken($sactumToken)['created_at']->addMinutes(config('sanctum.expiration'))->gte(now()) //has it expired
+        ) ? true : false;
+    }
+
+    function refresh_token($sactumToken){
+        DB::table('personal_access_tokens')->where('id', PersonalAccessToken::findToken($sactumToken)['tokenable_id'])->update(['created_at' => now()]);
     }
 
     function error_msg($success_code, $code, $text){

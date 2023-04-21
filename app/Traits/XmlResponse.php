@@ -2,6 +2,7 @@
 namespace App\Traits;
 
 use Illuminate\Support\Str;
+use Laravel\Sanctum\PersonalAccessToken;
 
 trait XmlResponse
 {
@@ -26,7 +27,7 @@ trait XmlResponse
                     $params->addChild('info', $token);
                     break;
 
-                case "get_balance":
+                case 'get_balance':
                     $params->addChild('balance', $info['balance']);
                     break;
 
@@ -34,8 +35,9 @@ trait XmlResponse
                     $params->addChild('new_token', $token); //SUKURTI NAUJA??
                     break;
 
-                case 'get_balance':
-                    $params->addChild('balance', 'PLAYER BALANCE');
+                case 'transaction_bet_payin':
+                    //$params->addChild('balance_after', $balance_after);
+                    //$params->addChild('already_processed', ??????????????);
                     break;
             }
         }

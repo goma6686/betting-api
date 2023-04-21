@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 class UserController extends Controller
 {
-    public function update(Request $request)
+    public function updateBalance(Request $request)
     {
         $request->validate([
             'balance' => 'numeric|between:0.0,50000.99',
@@ -19,4 +19,9 @@ class UserController extends Controller
         
         return redirect()->back();
     }
+
+    public function placeBet(){
+        //
+    }
+
 }
