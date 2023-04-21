@@ -10,12 +10,12 @@ class UserController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'balance' => 'numeric|min:0.0|max:50000',
+            'balance' => 'numeric|between:0.0,50000.99',
         ]);
 
         DB::table('users')
               ->where('id', Auth::id())
-              ->update(['balance' => $request->balance]);
+              ->update(['balance' => 100*($request->balance)]);
         
         return redirect()->back();
     }

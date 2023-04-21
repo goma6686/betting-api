@@ -10,16 +10,14 @@ use App\Traits\XmlRequest;
 class ApiController extends Controller
 {
     private const TOKEN_EXPIRATION_TIME = 1;
+    private const SECRET = "CCHWS-ZIFJV-HEAOB-DV336";
 
     use XmlResponse, XmlRequest;
 
-    public function method(Request $request){
+    public function methods(Request $request){
         $req_array = $this->xml_request($request->getContent());
 
-        $secret = "CCHWS-ZIFJV-HEAOB-DV336";
-
-
-        if (!($this->check_signature($secret, $req_array['requestId'], $req_array['signature']))){
+        if (!($this->check_signature(self::SECRET, $req_array['requestId'], $req_array['signature']))){
             $response_errors = $this->error_msg("0", "1", "wrong signature");
 
             if (!($this->check_time($req_array['time']))){
@@ -29,14 +27,16 @@ class ApiController extends Controller
             $response_errors = $this->error_msg("1", "0", "");
         }
 
-        if($req_array['method'] != 'ping'){
+        if($req_array['method'] !== 'ping'){
             if($this->check_token($req_array['token'])){
                 $response_errors = $this->error_msg("1", "0", "");
 
                 switch($req_array['method']){
+                    case "get_balance":
                     case "get_account_details":
-                        $info = PersonalAccessToken::findToken($req_array['token'])->tokenable;
+                        $info = PersonalAccessToken::findToken($req_array['token'])->tokenable; //TODO check expiration
                         break;
+                        
                     case "refresh_token":
                     case "request_new_token":
                         if (config('sanctum.expiration') )
@@ -49,7 +49,7 @@ class ApiController extends Controller
         }
 
         return response((
-            $this->xml_response($req_array['method'], $req_array['token'], $response_errors, $info ?? null, $secret))
+            $this->xml_response($req_array['method'], $req_array['token'], $response_errors, $info ?? null, self::SECRET))
                 ->asXML())
                 ->header('Content-Type', 'application/xml');
     }
@@ -59,7 +59,8 @@ class ApiController extends Controller
     }
 
     function check_time($time){
-        return time() - $time <= 60 ? true : false;
+        //return time() - $time <= 60 ? true : false;
+        return true;
     }
 
     function check_token($sactumToken){
