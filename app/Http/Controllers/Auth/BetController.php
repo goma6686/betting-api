@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
+use App\Http\Controllers\UserController;
 
-class BetController extends Controller
+class BetController extends UserController
 {
     public function index (){
-        return view('betgames', ['token' => User::issuetoken(Auth::user())]);
+        return view('betgames', ['token' => UserController::issuetoken(Auth::user())]);
     }
 }
