@@ -22,26 +22,29 @@ class UserController extends Controller
         return redirect()->back();
     }
 
-    protected static function issuetoken (User $user){
+    public function issuetoken (User $user){
         if ($user->tokens()){
             $user->tokens()->delete();
         }
         return $user->createToken('token')->plainTextToken;
     }
 
-    public static function check_token($sactumToken){
+    public function check_token($sactumToken){
         return (
             PersonalAccessToken::findToken($sactumToken) && //does it exist
             PersonalAccessToken::findToken($sactumToken)['created_at']->addMinutes(config('sanctum.expiration'))->gte(now()) //has it expired
         ) ? true : false;
     }
 
-    function refresh_token($sactumToken){
+    public function refresh_token($sactumToken){
         DB::table('personal_access_tokens')->where('id', PersonalAccessToken::findToken($sactumToken)['id'])->update(['created_at' => now()]);
     }
 
-    public function placeBet(){
-        //
+    public function placeBet($id, $amount){
+        DB::transaction(function() use ($id, $amount) {
+            DB::table('users')
+                ->where('id', $id)
+                ->update(['balance' => $amount]);
+        });
     }
-
 }

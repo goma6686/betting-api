@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->unsigned()->constrained('users');
             $table->integer('amount');
-            $table->integer('transaction_id');
+            $table->string('currency');
+            $table->bigInteger('bet_id')->unsigned();            
+            $table->bigInteger('transaction_id')->unsigned();
             $table->timestamps();
         });
     }

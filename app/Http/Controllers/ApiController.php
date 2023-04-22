@@ -7,9 +7,10 @@ use Laravel\Sanctum\PersonalAccessToken;
 use App\Models\Transaction;
 use App\Traits\XmlResponse;
 use App\Traits\XmlRequest;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TransactionController;
+use App\Models\User;
 
 class ApiController extends Controller
 {
@@ -32,33 +33,36 @@ class ApiController extends Controller
         }
 
         if($req_array['method'] !== 'ping'){
-            if(UserController::check_token($req_array['token'])){
-                //$token = PersonalAccessToken::findToken($req_array['token']);
+            $usr_c = new UserController();
+
+            if($usr_c->check_token($req_array['token'])){
+                $token = PersonalAccessToken::findToken($req_array['token']);
+
                 switch($req_array['method']){
                     case "get_balance":
-                        $info['balance'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['balance'];
-                        $this->refresh_token($req_array['token']);
+                        $info['balance'] = ($token->tokenable)['balance'];
+                        $usr_c->refresh_token($req_array['token']);
 
                     case "get_account_details":
-                        $info['id'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['id'];
-                        $info['username'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['username'];
-                        $info['currency'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['currency'];
-                        $info['info'] = (PersonalAccessToken::findToken($req_array['token'])['token']);
-                        $this->refresh_token($req_array['token']);
+                        $info['id'] = ($token->tokenable)['id'];
+                        $info['username'] = ($token->tokenable)['username'];
+                        $info['currency'] = ($token->tokenable)['currency'];
+                        $info['info'] = ($token['token']);
+                        $usr_c->refresh_token($req_array['token']);
                         break;
 
                     case "transaction_bet_payin":
                         if(Schema::hasTable('transactions')){
                             if(Transaction::where('transaction_id', '=', $req_array['transaction_id'])->exists()){
-                                $this->refresh_token($req_array['token']);
+                                (new UserController)->refresh_token($req_array['token']);
                                 $info['already_processed'] = 1;
     
-                            } else if((PersonalAccessToken::findToken($req_array['token'])->tokenable)['balance'] >= $req_array['amount']) {
-                                $this->refresh_token($req_array['token']);
-                                DB::table('users')
-                                ->where('id', (PersonalAccessToken::findToken($req_array['token'])->tokenable)['id'])
-                                ->update(['balance' => (PersonalAccessToken::findToken($req_array['token'])->tokenable)['balance'] - $req_array['amount']]);
-                                $info['balance'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['balance'];
+                            } else if(($token->tokenable)['balance'] >= $req_array['amount']) {
+                                $usr_c->refresh_token($req_array['token']);
+                                return array(($token->tokenable)['id'], ($token->tokenable)['balance'] - $req_array['amount']);
+                                $usr_c->placeBet(($token->tokenable)['id'],  ($token->tokenable)['balance'] - $req_array['amount']);
+                                (new TransactionController)->store(($token->tokenable)['id'], ($token->tokenable)['balance'] - $req_array['amount'], $req_array['transaction_id']);
+                                $info['balance'] = "lol";
                                 $info['already_processed'] = 0;
                             } else {
                                 $response_errors = $this->error_msg("0", "703", "insufficient balance");
