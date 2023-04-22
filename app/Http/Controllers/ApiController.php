@@ -9,7 +9,7 @@ use App\Traits\XmlResponse;
 use App\Traits\XmlRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use App\Models\User;
+use App\Http\Controllers\UserController;
 
 class ApiController extends Controller
 {
@@ -21,44 +21,44 @@ class ApiController extends Controller
     public function methods(Request $request){
         $req_array = $this->xml_request($request->getContent());
 
-        if (!($this->check_signature(self::SECRET, $req_array[0]['requestId'], $req_array[0]['signature']))){
+        if (!($this->check_signature(self::SECRET, $req_array['requestId'], $req_array['signature']))){
             $response_errors = $this->error_msg("0", "1", "wrong signature");
 
-            if (!($this->check_time($req_array[0]['time']))){
+            if (!($this->check_time($req_array['time']))){
                 $response_errors = $this->error_msg("0", "2", "request is expired");
             }
         } else {
             $response_errors = $this->error_msg("1", "0", "");
         }
 
-        if($req_array[0]['method'] !== 'ping'){
-            if(User::check_token($req_array[0]['token'])){
-
-                switch($req_array[0]['method']){
+        if($req_array['method'] !== 'ping'){
+            if(UserController::check_token($req_array['token'])){
+                //$token = PersonalAccessToken::findToken($req_array['token']);
+                switch($req_array['method']){
                     case "get_balance":
-                        $info['balance'] = (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['balance'];
-                        $this->refresh_token($req_array[0]['token']);
+                        $info['balance'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['balance'];
+                        $this->refresh_token($req_array['token']);
 
                     case "get_account_details":
-                        $info['id'] = (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['id'];
-                        $info['username'] = (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['username'];
-                        $info['currency'] = (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['currency'];
-                        $info['info'] = (PersonalAccessToken::findToken($req_array[0]['token'])['token']);
-                        $this->refresh_token($req_array[0]['token']);
+                        $info['id'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['id'];
+                        $info['username'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['username'];
+                        $info['currency'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['currency'];
+                        $info['info'] = (PersonalAccessToken::findToken($req_array['token'])['token']);
+                        $this->refresh_token($req_array['token']);
                         break;
 
                     case "transaction_bet_payin":
                         if(Schema::hasTable('transactions')){
-                            if(Transaction::where('transaction_id', '=', $req_array[1]['transaction_id'])->exists()){
-                                $this->refresh_token($req_array[0]['token']);
+                            if(Transaction::where('transaction_id', '=', $req_array['transaction_id'])->exists()){
+                                $this->refresh_token($req_array['token']);
                                 $info['already_processed'] = 1;
     
-                            } else if((PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['balance'] >= $req_array[1]['amount']) {
-                                $this->refresh_token($req_array[0]['token']);
+                            } else if((PersonalAccessToken::findToken($req_array['token'])->tokenable)['balance'] >= $req_array['amount']) {
+                                $this->refresh_token($req_array['token']);
                                 DB::table('users')
-                                ->where('id', (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['id'])
-                                ->update(['balance' => (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['balance'] - $req_array[1]['amount']]);
-                                $info['balance'] = (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['balance'];
+                                ->where('id', (PersonalAccessToken::findToken($req_array['token'])->tokenable)['id'])
+                                ->update(['balance' => (PersonalAccessToken::findToken($req_array['token'])->tokenable)['balance'] - $req_array['amount']]);
+                                $info['balance'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['balance'];
                                 $info['already_processed'] = 0;
                             } else {
                                 $response_errors = $this->error_msg("0", "703", "insufficient balance");
@@ -74,7 +74,7 @@ class ApiController extends Controller
         }
 
         return response((
-            $this->xml_response($req_array[0]['method'], $req_array[0]['token'], $response_errors, $info ?? null, self::SECRET))
+            $this->xml_response($req_array['method'], $req_array['token'], $response_errors, $info ?? null, self::SECRET))
                 ->asXML())
                 ->header('Content-Type', 'application/xml');
     }
