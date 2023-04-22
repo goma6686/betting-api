@@ -8,6 +8,8 @@ use App\Models\Transaction;
 use App\Traits\XmlResponse;
 use App\Traits\XmlRequest;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use App\Models\User;
 
 class ApiController extends Controller
 {
@@ -19,44 +21,51 @@ class ApiController extends Controller
     public function methods(Request $request){
         $req_array = $this->xml_request($request->getContent());
 
-        if (!($this->check_signature(self::SECRET, $req_array['requestId'], $req_array['signature']))){
+        if (!($this->check_signature(self::SECRET, $req_array[0]['requestId'], $req_array[0]['signature']))){
             $response_errors = $this->error_msg("0", "1", "wrong signature");
 
-            if (!($this->check_time($req_array['time']))){
+            if (!($this->check_time($req_array[0]['time']))){
                 $response_errors = $this->error_msg("0", "2", "request is expired");
             }
         } else {
             $response_errors = $this->error_msg("1", "0", "");
         }
 
-        if($req_array['method'] !== 'ping'){
-            if($this->check_token($req_array['token'])){
+        if($req_array[0]['method'] !== 'ping'){
+            if(User::check_token($req_array[0]['token'])){
 
-                switch($req_array['method']){
+                switch($req_array[0]['method']){
                     case "get_balance":
-                        $info['balance'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['balance'];
+                        $info['balance'] = (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['balance'];
+                        $this->refresh_token($req_array[0]['token']);
+
                     case "get_account_details":
-                        $info['id'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['id'];
-                        $info['username'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['username'];
-                        $info['currency'] = (PersonalAccessToken::findToken($req_array['token'])->tokenable)['currency'];
-                        $info['info'] = (PersonalAccessToken::findToken($req_array['token'])['token']);
+                        $info['id'] = (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['id'];
+                        $info['username'] = (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['username'];
+                        $info['currency'] = (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['currency'];
+                        $info['info'] = (PersonalAccessToken::findToken($req_array[0]['token'])['token']);
+                        $this->refresh_token($req_array[0]['token']);
                         break;
 
                     case "transaction_bet_payin":
-                        if(Transaction::where('transaction_id', '=', $req_array['transaction_id'])->exists()){
-                            //1.refresh token
-                            //2.success with already processed = 1
-                            //3.DO NOT withdraw money
-                        } else if((PersonalAccessToken::findToken($req_array['token'])->tokenable)['balance'] >= $req_array['amount']) {
-                            //1.refresh token
-                            //2.deduct from balance
-                            //3.success with actual balance
-                        } else {
-                            $response_errors = $this->error_msg("0", "703", "insufficient balance");
-                        };
+                        if(Schema::hasTable('transactions')){
+                            if(Transaction::where('transaction_id', '=', $req_array[1]['transaction_id'])->exists()){
+                                $this->refresh_token($req_array[0]['token']);
+                                $info['already_processed'] = 1;
+    
+                            } else if((PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['balance'] >= $req_array[1]['amount']) {
+                                $this->refresh_token($req_array[0]['token']);
+                                DB::table('users')
+                                ->where('id', (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['id'])
+                                ->update(['balance' => (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['balance'] - $req_array[1]['amount']]);
+                                $info['balance'] = (PersonalAccessToken::findToken($req_array[0]['token'])->tokenable)['balance'];
+                                $info['already_processed'] = 0;
+                            } else {
+                                $response_errors = $this->error_msg("0", "703", "insufficient balance");
+                            };
+                        }
                         break;
                 }
-                $this->refresh_token($req_array['token']);
                 $response_errors = $this->error_msg("1", "0", "");
 
             } else {
@@ -65,7 +74,7 @@ class ApiController extends Controller
         }
 
         return response((
-            $this->xml_response($req_array['method'], $req_array['token'], $response_errors, $info ?? null, self::SECRET))
+            $this->xml_response($req_array[0]['method'], $req_array[0]['token'], $response_errors, $info ?? null, self::SECRET))
                 ->asXML())
                 ->header('Content-Type', 'application/xml');
     }
@@ -77,17 +86,6 @@ class ApiController extends Controller
     function check_time($time){
         //return time() - $time <= 60 ? true : false;
         return true;
-    }
-
-    function check_token($sactumToken){
-        return (
-            PersonalAccessToken::findToken($sactumToken) && //does it exist
-            PersonalAccessToken::findToken($sactumToken)['created_at']->addMinutes(config('sanctum.expiration'))->gte(now()) //has it expired
-        ) ? true : false;
-    }
-
-    function refresh_token($sactumToken){
-        DB::table('personal_access_tokens')->where('id', PersonalAccessToken::findToken($sactumToken)['id'])->update(['created_at' => now()]);
     }
 
     function error_msg($success_code, $code, $text){

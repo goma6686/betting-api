@@ -13,15 +13,14 @@ trait XmlRequest
         $arr['time'] = (string) $xml->time;
         $arr['signature'] = (string) $xml->signature;
         $arr['params'] = (string) $xml->params;
-        
         if(null !== ($xml->params->children())){
-            $arr['amount'] = (string) $xml->params->amount;
-            $arr['currency'] = (string) $xml->params->currency;
-            $arr['bet_id'] = (string) $xml->params->bet_id;
-            $arr['transaction_id'] = (string) $xml->transaction_id;
-            $arr['retrying'] = (string) $xml->params->retrying;
+            $params['amount'] = (string) $xml->params->amount;
+            $params['currency'] = (string) $xml->params->currency;
+            $params['bet_id'] = (string) $xml->params->bet_id;
+            $params['transaction_id'] = (string) $xml->transaction_id;
+            $params['retrying'] = (string) $xml->params->retrying;
         }
 
-        return $arr;
+        return array($arr, $params ?? null);
     }
 }
