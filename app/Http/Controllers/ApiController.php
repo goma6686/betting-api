@@ -10,7 +10,6 @@ use App\Traits\XmlRequest;
 use Illuminate\Support\Facades\Schema;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TransactionController;
-use App\Models\User;
 
 class ApiController extends Controller
 {
@@ -40,7 +39,6 @@ class ApiController extends Controller
 
                 switch($req_array['method']){
                     case "get_balance":
-                        $info['balance'] = ($token->tokenable)['balance'];
                         $usr_c->refresh_token($req_array['token']);
 
                     case "get_account_details":
@@ -53,25 +51,25 @@ class ApiController extends Controller
 
                     case "transaction_bet_payin":
                         if(Schema::hasTable('transactions')){
+                            
                             if(Transaction::where('transaction_id', '=', $req_array['transaction_id'])->exists()){
-                                (new UserController)->refresh_token($req_array['token']);
+                                $usr_c->refresh_token($req_array['token']);
                                 $info['already_processed'] = 1;
     
                             } else if(($token->tokenable)['balance'] >= $req_array['amount']) {
                                 $usr_c->refresh_token($req_array['token']);
-                                return array(($token->tokenable)['id'], ($token->tokenable)['balance'] - $req_array['amount']);
                                 $usr_c->placeBet(($token->tokenable)['id'],  ($token->tokenable)['balance'] - $req_array['amount']);
-                                (new TransactionController)->store(($token->tokenable)['id'], ($token->tokenable)['balance'] - $req_array['amount'], $req_array['transaction_id']);
-                                $info['balance'] = "lol";
+                                (new TransactionController)->store(($token->tokenable)['id'], ($token->tokenable)['balance'] - $req_array['amount'], $req_array['bet_id'], $req_array['transaction_id']);
                                 $info['already_processed'] = 0;
+
                             } else {
                                 $response_errors = $this->error_msg("0", "703", "insufficient balance");
+
                             };
                         }
                         break;
+                    $response_errors = $this->error_msg("1", "0", "");
                 }
-                $response_errors = $this->error_msg("1", "0", "");
-
             } else {
                 $response_errors = $this->error_msg("0", "3", "invalid token");
             }

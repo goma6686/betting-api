@@ -3,11 +3,11 @@ namespace App\Traits;
 
 use Illuminate\Support\Str;
 
+use Laravel\Sanctum\PersonalAccessToken;
+
 trait XmlResponse
 {
     protected function xml_response($method, $token, $response, $info, $secret){
-        $responseId = Str::uuid()->toString();
-
         $xmlResponse = new \SimpleXMLElement('<root/>');
         $xmlResponse->addChild('method', $method);
         $xmlResponse->addChild('token', $token);
@@ -27,7 +27,7 @@ trait XmlResponse
                     break;
 
                 case 'get_balance':
-                    $params->addChild('balance', $info['balance']);
+                    $params->addChild('balance', (PersonalAccessToken::findToken($token))->tokenable['balance']);
                     break;
 
                 case 'request_new_token':
@@ -35,12 +35,12 @@ trait XmlResponse
                     break;
 
                 case 'transaction_bet_payin':
-                    $params->addChild('balance_after', $info['balance']);
+                    $params->addChild('balance_after', (PersonalAccessToken::findToken($token))->tokenable['balance']);
                     $params->addChild('already_processed', $info['already_processed']);
                     break;
             }
         }
-
+        $responseId = Str::uuid()->toString();
         $xmlResponse->addChild('response_id', $responseId); //UUID
         $xmlResponse->addChild('time', time());
         $xmlResponse->addChild('signature', hash_hmac('sha256', $responseId, $secret));

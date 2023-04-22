@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->uuid('id');
-            $table->uuid('user_id');
-            //$table->foreignId('user_id')->unsigned()->constrained('users');
+            $table->foreignUuid('user_id');
             $table->integer('amount');
             $table->string('currency');
             $table->bigInteger('bet_id')->unsigned();            
