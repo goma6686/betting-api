@@ -121,7 +121,7 @@ class ApiController extends Controller
     }
 
     function check_time($time){
-        //return time() - $time <= 60 ? true : false;
+        return time() - $time <= 60 ? true : false;
         return true;
     }
 
