@@ -7,13 +7,13 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 final class XmlResponse
 {
-    public function __construct(
+    private function __construct(
         public readonly string $method,
         public readonly string $token,
         public readonly string $success,
         public readonly string $errorCode,
         public readonly string $errorText,
-        public ?array $params = null,
+        public readonly ?array $params = null,
         public readonly string $responseId,
         public readonly int $time,
         public readonly string $signature
@@ -33,14 +33,15 @@ final class XmlResponse
 
             switch ($method){
                 case 'get_account_details':
+                    /*
                     $params['user_id'] = $info['id'];
                     $params['username'] = $info['username'];
                     $params['currency'] = $info['currency'];
-                    $params['info'] = $info['token'];
+                    $params['info'] = $info['token'];*/
                     break;
 
                 case 'get_balance':
-                    $params['balance'] = PersonalAccessToken::findToken($token)->tokenable['balance'];
+                    $params['balance'] = $info['player_balance'];
                     break;
 
                 case 'request_new_token':
@@ -54,8 +55,8 @@ final class XmlResponse
                     break;
             }
         }
-        $responseId = Str::uuid()->toString();
-        $signature = hash_hmac('sha256', $responseId, $secret);
+            $responseId = Str::uuid()->toString();
+            $signature = hash_hmac('sha256', $responseId, $secret);
 
         return new self(
             $method,
@@ -79,7 +80,7 @@ final class XmlResponse
         $xmlResponse->addChild('error_code', $this->errorCode);
         $xmlResponse->addChild('error_text', $this->errorText);
 
-        if ($this->params !== null) {
+        if($this->success !== '0' && $this->params !== null){
             $params = $xmlResponse->addChild('params');
 
             foreach ($this->params as $key => $value) {
