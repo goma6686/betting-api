@@ -35,7 +35,6 @@ class LoginController extends Controller
     {
         $request->user()->tokens()->delete();
         
-        //Auth::logout();
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
