@@ -9,7 +9,7 @@ use App\Models\User;
 
 class TransactionController extends Controller
 {
-    public function store($usr_id, $amount, $bet_id, $tsc_id, $tsc_type){
+    public function store($usr_id, int $amount, int $bet_id, int $tsc_id, string $tsc_type){
 
         DB::transaction(function () use ($usr_id, $amount, $bet_id, $tsc_id, $tsc_type){
             Transaction::create([

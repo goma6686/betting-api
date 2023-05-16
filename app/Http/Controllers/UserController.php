@@ -35,10 +35,10 @@ class UserController extends Controller
         return (
             PersonalAccessToken::findToken($sactumToken) && //does it exist
             (PersonalAccessToken::findToken($sactumToken)->created_at)->addMinutes(config('sanctum.expiration'))->gte(Carbon::now()) //has it expired
-        ) ? true : false;
+        );
     }
 
-    public function refresh_token($sactumToken){
+    public function refresh_token(string $sactumToken){
         DB::table('personal_access_tokens')->where('id', PersonalAccessToken::findToken($sactumToken)->id)->update(['created_at' => now()]);
     }
 }
