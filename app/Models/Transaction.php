@@ -17,6 +17,7 @@ class Transaction extends Model
         'currency',
         'bet_id',
         'transaction_id',
+        'transaction_type'
     ];
 
     public function user():BelongsTo{

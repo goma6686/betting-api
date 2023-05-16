@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('currency');
             $table->bigInteger('bet_id')->unsigned();            
             $table->bigInteger('transaction_id')->unsigned();
+            $table->enum('transaction_type', ['payin', 'payout']);
             $table->timestamps();
         });
     }
