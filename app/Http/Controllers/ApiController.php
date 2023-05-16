@@ -123,8 +123,7 @@ class ApiController extends Controller
     }
 
     function check_time(int $time): bool{
-        //return time() - $time <= 60;
-        return true;
+        return time() - $time <= 60;
     }
 
     private function generateErrorResponse(int $success_code, int $code, string $text)
