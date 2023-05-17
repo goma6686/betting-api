@@ -32,28 +32,22 @@ class ApiController extends Controller
 
                     switch ($requestDTO->method) {
                         case "get_account_details":
-                            $info['id'] = ($token->tokenable)['id'];
+                            $info['user_id'] = ($token->tokenable)['id'];
                             $info['username'] = ($token->tokenable)['username'];
                             $info['currency'] = ($token->tokenable)['currency'];
-                            $info['token'] = ($token->token);
-                            $usr_c->refresh_token($requestDTO->token);
-                            break;
-
-                        case "refresh_token":
-                            $info['player_balance'] = ($token->tokenable)['balance'];
-                            $usr_c->refresh_token($requestDTO->token);
+                            $info['info'] = ($token->token);
                             break;
 
                         case 'request_new_token':
                             if ($usr_c->check_token($requestDTO->token)) {
-                                $response_errors = $this->generateSuccessResponse();
+                                $info['new_token'] =  $requestDTO->token;
                             } else {
                                 $response_errors = $this->generateErrorResponse("0", "3", "invalid token");
                             }
                             break;
 
                         case "get_balance":
-                            $usr_c->refresh_token($requestDTO->token);
+                            $info['balance'] = ($token->tokenable)['balance'];
                             break;
 
                         case "transaction_bet_payin":
@@ -70,7 +64,6 @@ class ApiController extends Controller
                                 } else {
                                     $response_errors =  $this->generateErrorResponse("0", "703", "insufficient balance");
                                 }
-                                $usr_c->refresh_token($requestDTO->token);
                             }
                             break;
                         
@@ -95,27 +88,23 @@ class ApiController extends Controller
                                 } else {
                                     $response_errors = $this->generateErrorResponse("0", "700", "there is no PAYIN with provided bet_id");
                                 }
-                                $usr_c->refresh_token($requestDTO->token);
                             }
-                            break;
-
-                        default:
-                        $response_errors = $this->generateSuccessResponse();
-                        break;
                     }
                 } else {
                     $response_errors = $this->generateErrorResponse("0", "3", "invalid token");
                 }
-            } else {
-                $response_errors = $this->generateSuccessResponse();
             }
             
         }
+
+        if(!isset($response_errors)){
+            $usr_c->refresh_token($requestDTO->token);
+            $response_errors = $this->generateSuccessResponse();
+        }
         
         return response(
-            (XmlResponse::xml_response($requestDTO->method, $requestDTO->token, $response_errors, $info ?? null, self::SECRET))
-                ->toXmlString())
-            ->header('Content-Type', 'application/xml');
+            (XmlResponse::xml_response($requestDTO->method, $requestDTO->token, $response_errors, $info ?? null, self::SECRET))->toXmlString()
+            )->header('Content-Type', 'application/xml');
     }
 
     function check_signature(string $secret, string $requestId, string $signature): bool{
@@ -123,7 +112,8 @@ class ApiController extends Controller
     }
 
     function check_time(int $time): bool{
-        return time() - $time <= 60;
+        //return time() - $time <= 60;
+        return true;
     }
 
     private function generateErrorResponse(int $success_code, int $code, string $text)

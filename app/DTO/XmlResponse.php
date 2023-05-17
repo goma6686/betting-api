@@ -26,30 +26,19 @@ final class XmlResponse
         ?array $info = null,
         string $secret
     ): self {
-        $params = null;
 
         if($response['success'] !== '0'){
             $params = [];
 
             switch ($method){
                 case 'get_account_details':
-                    /*
-                    $params['user_id'] = $info['id'];
-                    $params['username'] = $info['username'];
-                    $params['currency'] = $info['currency'];
-                    $params['info'] = $info['token'];*/
-                    break;
-
                 case 'get_balance':
-                    $params['balance'] = $info['player_balance'];
-                    break;
-
                 case 'request_new_token':
-                    $params['new_token'] = $token;
+                    $params = $info;
                     break;
 
                 case 'transaction_bet_payin':
-                    case 'transaction_bet_payout':
+                case 'transaction_bet_payout':
                     $params['balance_after'] = PersonalAccessToken::findToken($token)->tokenable['balance'];
                     $params['already_processed'] = $info['already_processed'];
                     break;
@@ -82,7 +71,6 @@ final class XmlResponse
 
         if($this->success !== '0' && $this->params !== null){
             $params = $xmlResponse->addChild('params');
-
             foreach ($this->params as $key => $value) {
                 $params->addChild($key, $value);
             }
