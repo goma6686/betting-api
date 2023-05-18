@@ -2,34 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Repositories\Interfaces\TransactionRepositoryInterface;
 use App\Models\Transaction;
-use App\Models\User;
+use App\Repositories\Interfaces\UserRepositoryInterface;
 
 class TransactionController extends Controller
 {
-    public function store($usr_id, int $amount, int $bet_id, int $tsc_id, string $tsc_type){
 
-        DB::transaction(function () use ($usr_id, $amount, $bet_id, $tsc_id, $tsc_type){
-            Transaction::create([
-                'user_id' => $usr_id,
-                'amount' => $amount,
-                'currency' => 'eur',
-                'bet_id' => $bet_id,
-                'transaction_id' => $tsc_id,
-                'transaction_type' => $tsc_type
-            ]);
-        });
-    }
+    public function __construct(
+        protected TransactionRepositoryInterface $transactionRepository,
+        protected UserRepositoryInterface $userRepository
+        ) {}
 
-    public function payin_payout($usr_id, $amount, $bet_id, $tsc_id, $tsc_type){
-        DB::transaction(function() use ($usr_id, $amount, $bet_id, $tsc_id, $tsc_type) {
-            $user = User::findOrFail($usr_id);
-            ($tsc_type == 'payin') ? $user->balance -= $amount : $user->balance += $amount;
-            $user->save();
+    public function store(array $transactionData){
 
-            $this->store($usr_id, $amount, $bet_id, $tsc_id, $tsc_type);
-        });
+        return $this->transactionRepository->createTransaction($transactionData);
     }
 }

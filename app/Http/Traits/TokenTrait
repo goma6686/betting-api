@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Http\Traits;
+
+use App\Repositories\Interfaces\PersonalAccessTokenRepositoryInterface;
+
+trait TokenTrait {
+    
+    public function __construct(
+        protected PersonalAccessTokenRepositoryInterface $personalAccessTokenRepository
+    ) {}
+
+    public function token($plainToken){
+        return $this->personalAccessTokenRepository->getToken($plainToken);
+    }
+
+    public function check_token(string $requestToken){
+        return $this->personalAccessTokenRepository->checkToken($requestToken);
+    }
+
+    public function refresh_token(string $sactumToken){
+        return $this->personalAccessTokenRepository->refreshToken($sactumToken);
+    }
+
+    public function get_user_by_token($token){
+        return $this->token($token)->tokenable;
+    }
+}

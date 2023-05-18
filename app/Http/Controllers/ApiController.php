@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Laravel\Sanctum\PersonalAccessToken;
-use App\Models\Transaction;
 use App\DTO\XmlResponse;
 use App\DTO\XmlRequest;
-use Illuminate\Support\Facades\Schema;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\TransactionController;
+use App\Http\Traits\TransactionTrait;
+use App\Http\Traits\TokenTrait;
+use App\Http\Traits\ResponseTrait;
 
-class ApiController extends Controller
+class ApiController
 {
+    use TransactionTrait, TokenTrait, ResponseTrait;
+
     private const SECRET = "CCHWS-ZIFJV-HEAOB-DV336";
 
     public function methods(Request $request){
@@ -24,82 +24,43 @@ class ApiController extends Controller
         }else if(!($this->check_time($requestDTO->time))){
             $response_errors = $this->generateErrorResponse("0", "2", "request is expired");
         } else {
-            if($requestDTO->method !== "ping"){
-                $usr_c = new UserController();
 
-                if($usr_c->check_token($requestDTO->token)){
-                    $token = PersonalAccessToken::findToken($requestDTO->token);
+            if($this->check_token($requestDTO->token)){
+                $user = $this->get_user_by_token($requestDTO->token);
 
-                    switch ($requestDTO->method) {
-                        case "get_account_details":
-                            $info['user_id'] = ($token->tokenable)['id'];
-                            $info['username'] = ($token->tokenable)['username'];
-                            $info['currency'] = ($token->tokenable)['currency'];
-                            $info['info'] = ($token->token);
-                            break;
+                switch ($requestDTO->method) {
+                    case "get_account_details":
+                        $info['user_id'] = ($user)['id'];
+                        $info['username'] = ($user)['username'];
+                        $info['currency'] = ($user)['currency'];
+                        $info['info'] = ($this->token($requestDTO->token)->token);
+                        break;
 
-                        case 'request_new_token':
-                            if ($usr_c->check_token($requestDTO->token)) {
-                                $info['new_token'] =  $requestDTO->token;
-                            } else {
-                                $response_errors = $this->generateErrorResponse("0", "3", "invalid token");
-                            }
-                            break;
+                    case 'request_new_token':
+                        $info['new_token'] =  $requestDTO->token;
+                        break;
 
-                        case "get_balance":
-                            $info['balance'] = ($token->tokenable)['balance'];
-                            break;
+                    case "get_balance":
+                        $info['balance'] = ($user)['balance'];
+                        break;
 
-                        case "transaction_bet_payin":
-                            if (Schema::hasTable('transactions')) {
-
-                                if (Transaction::where('transaction_id', '=', $requestDTO->transactionId)
-                                ->where('transaction_type', '=', 'payin')->exists()) {
-                                    $info['already_processed'] = 1;
-
-                                } else if (($token->tokenable)['balance'] >= $requestDTO->amount) {
-                                    (new TransactionController)->payin_payout(($token->tokenable)['id'], $requestDTO->amount, $requestDTO->betId, $requestDTO->transactionId, 'payin');
-                                    $info['already_processed'] = 0;
-
-                                } else {
-                                    $response_errors =  $this->generateErrorResponse("0", "703", "insufficient balance");
-                                }
-                            }
-                            break;
-                        
-                        case "transaction_bet_payout":
-                            if(Schema::hasTable('transactions')){
-                                if(Transaction::where('transaction_id', '=', $requestDTO->transactionId)
-                                ->where('transaction_type', '=', 'payout')
-                                ->exists()){
-                                    $info['already_processed'] = 1;
-
-                                } else if(Transaction::where('bet_id', '=', $requestDTO->betId)->where('transaction_type', '=', 'payin')->exists()) {
-                                    if(Transaction::where('transaction_id', '<>', $requestDTO->transactionId)
-                                    ->where('transaction_type', '=', 'payout')
-                                    ->where('bet_id', '=', $requestDTO->betId)
-                                    ->exists()){
-                                        $info['already_processed'] = 1;
-
-                                    } else {
-                                        (new TransactionController)->payin_payout(($token->tokenable)['id'], $requestDTO->amount, $requestDTO->betId, $requestDTO->transactionId, 'payout');
-                                        $info['already_processed'] = 0;
-                                    }
-                                } else {
-                                    $response_errors = $this->generateErrorResponse("0", "700", "there is no PAYIN with provided bet_id");
-                                }
-                            }
-                    }
-                } else {
-                    $response_errors = $this->generateErrorResponse("0", "3", "invalid token");
+                    case "transaction_bet_payin":
+                        $this->validate_transaction($user['id'], $user['balance'], $requestDTO->amount, $requestDTO->betId, $requestDTO->transactionId, 'payin')
+                        ?? $response_errors =  $this->generateErrorResponse("0", "703", "insufficient balance");
+                        break;
+                    
+                    case "transaction_bet_payout":
+                        $this->validate_transaction($user['id'], $user['balance'], $requestDTO->amount, $requestDTO->betId, $requestDTO->transactionId, 'payin')
+                        ?? $response_errors = $this->generateErrorResponse("0", "700", "there is no PAYIN with provided bet_id");
+                        break;
                 }
+            } else {
+                ($requestDTO->method !== 'ping') ?? $response_errors = $this->generateErrorResponse("0", "3", "invalid token");
             }
-            
-        }
-
-        if(!isset($response_errors)){
-            $usr_c->refresh_token($requestDTO->token);
-            $response_errors = $this->generateSuccessResponse();
+            if(!isset($response_errors)){
+                ($requestDTO->method !== 'ping') ?? $this->refresh_token($requestDTO->token);
+                $response_errors = $this->generateSuccessResponse();
+            }
         }
         
         return response(
@@ -114,18 +75,5 @@ class ApiController extends Controller
     function check_time(int $time): bool{
         //return time() - $time <= 60;
         return true;
-    }
-
-    private function generateErrorResponse(int $success_code, int $code, string $text)
-    {
-        $response['success'] = $success_code;
-        $response['error_code'] = $code;
-        $response['error_text'] = $text;
-        return $response;
-    }
-
-    private function generateSuccessResponse()
-    {
-        return $this->generateErrorResponse("1", "0", "");
     }
 }

@@ -31,6 +31,6 @@ Route::controller(LoginController::class)->group(function() {
 });
 
 //Route::group(['middleware' => 'auth:sanctum'], function(){
-    Route::post('/update-balance', [UserController::class, 'updateBalance'])->name('update-balance');
+    Route::post('/update-balance', [UserController::class, 'update_balance'])->name('update-balance');
     Route::get('/BetGames', [BetController::class, 'index']);
 //});

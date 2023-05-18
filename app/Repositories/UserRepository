@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Repositories;
+
+use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Models\User;
+use App\Models\Transaction;
+
+class UserRepostory implements UserRepositoryInterface
+{
+    private Transaction $transaction;
+
+    public function __construct(Transaction $transaction)
+    {
+        $this->transaction = $transaction;
+    }
+    
+    public function getUserById($userId) 
+    {
+        return User::findOrFail($userId);
+    }
+
+    public function updateBalance($userId, array $data) 
+    {
+        $user = $this->getUserById($userId);
+
+        ($data[5] == 'payin') ? 
+            $user->update(['balance' => ($user->balance -= $data[1])]) : 
+            $user->update(['balance' => ($user->balance += $data[1])]);
+
+        $this->transaction->createTransaction($data);
+    }
+
+    public function manualUserBalance($userId, $amount){
+
+        return $this->getUserById($userId)::update(['balance' => 100*$amount]);
+
+    }
+}

@@ -8,6 +8,6 @@ use App\Http\Controllers\UserController;
 class BetController extends UserController
 {
     public function index (){
-        return view('betgames', ['token' => UserController::issuetoken(Auth::user())]);
+        return view('betgames', ['token' => UserController::issue_token(Auth::user())]);
     }
 }
