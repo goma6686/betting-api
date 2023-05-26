@@ -15,7 +15,7 @@ class TokenRepository implements TokenRepositoryInterface
         return PersonalAccessToken::findToken($plainToken);
     }
 
-    public function issue_token(User $user)
+    public function issue_token(User $user): string
     {
         if ($user->tokens()){
             $user->tokens()->delete();
@@ -23,14 +23,17 @@ class TokenRepository implements TokenRepositoryInterface
         return $user->createToken('token')->plainTextToken;
     }
 
-    public function checkToken($token): bool{
+    public function checkToken(string $token): bool{
         return (
-            $this->getToken($token) && //does it exist
-            ($this->getToken($token)->created_at)->addMinutes(config('sanctum.expiration'))->gte(Carbon::now()) //has it expired
-        );
+            $this->getToken($token) &&
+            $this->isExpired($this->getToken($token)->created_at));
     }
 
-    public function refreshToken( $sactumToken){
-        DB::table('personal_access_tokens')->where('id', PersonalAccessToken::findToken($sactumToken)->id)->update(['created_at' => now()]);
+    public function isExpired($created_at): bool{
+        return $created_at->addMinutes(config('sanctum.expiration'))->gte(Carbon::now());
+    }
+
+    public function refreshToken(string $token){
+        DB::table('personal_access_tokens')->where('id', PersonalAccessToken::findToken($token)->id)->update(['created_at' => now()]);
     }
 }

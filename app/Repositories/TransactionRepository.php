@@ -7,7 +7,7 @@ use App\Models\Transaction;
 class TransactionRepository implements TransactionRepositoryInterface
 {
 
-    public function doesEntryExist($column, $value, $filter, $operator): bool
+    public function doesTransactionExist($column, $value, $filter, $operator): bool
     {
         return (Transaction::where($column, $operator, $value)->where('transaction_type', $operator, $filter)->exists());
     }
@@ -22,6 +22,14 @@ class TransactionRepository implements TransactionRepositoryInterface
         return ($balance >= $amount);
     }
 
+    public function payin($data): bool{
+        return $this->checkBalance($data["user_balance"], $data["amount"]);
+    }
+
+    public function payout($data){
+        return $this->doesTransactionExist("bet_id", $data["bet_id"], "payin", '=');
+    }
+
     public function createTransaction(array $data)
     {
         Transaction::create([
@@ -32,5 +40,16 @@ class TransactionRepository implements TransactionRepositoryInterface
             "transaction_id" => $data["transaction_id"],
             "transaction_type" => $data["transaction_type"]
         ]);
+    }
+
+    function create_transaction_data($user_id, $balance, $requestDTO): array{
+        $transaction_data = array(
+            "user_id" => $user_id, 
+            "user_balance" => $balance, 
+            "amount" => $requestDTO->amount, 
+            "bet_id" => $requestDTO->betId, 
+            "transaction_id" => $requestDTO->transactionId,
+            "transaction_type" => ($requestDTO->method === "transaction_bet_payin") ? 'payin' : 'payout');
+        return $transaction_data;
     }
 }

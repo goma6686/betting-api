@@ -8,7 +8,7 @@ use App\Repositories\Interfaces\UserRepositoryInterface;
 
 class UserRepository implements UserRepositoryInterface{
 
-    public function getUserById($userId) 
+    public function getUserById($userId): User
     {
         return User::findOrFail($userId);
     }
@@ -19,7 +19,7 @@ public function updateBalance($userId, $type, $balance, $amount)
 
         $type === 'payin' ? 
             $user->update(['balance' => $balance - $amount]) : 
-            $user->update(['balance' => $balance += $amount]);
+            $user->update(['balance' => $balance + $amount]);
     }
 
     public function manualUserBalance($userId, $amount){
