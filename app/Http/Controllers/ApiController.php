@@ -58,6 +58,7 @@ class ApiController extends UserController
                     case "transaction_bet_payout":
                         $transac_data = $this->getTransactionData($user['id'], $user['balance'], $requestDTO);
                         $res = $this->validation($transac_data, null);
+                        
                         if(isset($res[0])){
                             $response_errors = $this->generateErrorResponse($res[0][0], $res[0][1], $res[0][2]);
                         }
