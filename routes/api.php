@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiController;
-use App\Http\Controllers\TransactionController;
+use App\Repositories\PersonalAccessTokenRepository;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,16 +19,7 @@ use App\Http\Controllers\TransactionController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
-Route::get('transactions', [TransactionController::class, 'index']);
-Route::post('transactions', [TransactionController::class, 'store']);
-Route::put('transactions/{id}', [TransactionController::class, 'update']);
-
+Route::resource('tokens', PersonalAccessTokenRepository::class);
 //Route::group(['middleware' => 'auth:sanctum'], function(){
-    Route::post('/tokens/create', function (Request $request) {
-        $token = $request->user()->createToken($request->token_name);
-     
-        return ['token' => $token->plainTextToken];
-    });
     Route::post('/betgames', [ApiController::class, 'methods']);
 //});

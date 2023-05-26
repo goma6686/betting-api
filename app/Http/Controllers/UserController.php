@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\Interfaces\PersonalAccessTokenRepositoryInterface;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\Interfaces\UserRepositoryInterface;
+use Illuminate\Http\Request;
 class UserController extends Controller
 {
     public function __construct(
-        protected UserRepositoryInterface $userRepository,
-        protected PersonalAccessTokenRepositoryInterface $personalAccessTokenRepository
+        protected UserRepositoryInterface $userRepository
     ) {}
 
     public function update_balance(Request $request)
@@ -18,13 +16,8 @@ class UserController extends Controller
         $request->validate([
             'balance' => 'numeric|between:0.0,50000.99',
         ]);
-
-        $this->userRepository->updateBalance(Auth::id(), $request->balance);
+        $this->userRepository->manualUserBalance(Auth::id(), $request->balance);
         
         return redirect()->back();
-    }
-
-    public function issue_token($id){
-        return $this->personalAccessTokenRepository->issueToken($this->userRepository->getUserById($id));
     }
 }
