@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiController;
+use App\Repositories\PersonalAccessTokenRepository;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,11 +19,7 @@ use App\Http\Controllers\ApiController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::resource('tokens', PersonalAccessTokenRepository::class);
 //Route::group(['middleware' => 'auth:sanctum'], function(){
-    Route::post('/tokens/create', function (Request $request) {
-        $token = $request->user()->createToken($request->token_name);
-     
-        return ['token' => $token->plainTextToken];
-    });
     Route::post('/betgames', [ApiController::class, 'methods']);
 //});
