@@ -27,22 +27,20 @@ final class XmlResponse
         string $secret
     ): self {
 
-        if($response['success'] !== '0'){
-            $params = [];
+        $params = [];
 
-            switch ($method){
-                case 'get_account_details':
-                case 'get_balance':
-                case 'request_new_token':
-                    $params = $info;
-                    break;
+        switch ($method){
+            case 'get_account_details':
+            case 'get_balance':
+            case 'request_new_token':
+                $params = $info;
+                break;
 
-                case 'transaction_bet_payin':
-                case 'transaction_bet_payout':
-                    $params['balance_after'] = PersonalAccessToken::findToken($token)->tokenable['balance'];
-                    $params['already_processed'] = $info['already_processed'];
-                    break;
-            }
+            case 'transaction_bet_payin':
+            case 'transaction_bet_payout':
+                $params['balance_after'] = PersonalAccessToken::findToken($token)->tokenable['balance'] ?? null;
+                $params['already_processed'] = $info['already_processed'] ?? null;
+                break;
         }
             $responseId = Str::uuid()->toString();
             $signature = hash_hmac('sha256', $responseId, $secret);

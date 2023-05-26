@@ -55,47 +55,13 @@ class ApiController extends UserController
                         break;
 
                     case "transaction_bet_payin":
-                        $data = array(
-                            "user_id" => $user['id'], 
-                            "user_balance" => $user['balance'], 
-                            "amount" => $requestDTO->amount, 
-                            "bet_id" => $requestDTO->betId, 
-                            "transaction_id" => $requestDTO->transactionId, 
-                            "transaction_type" => 'payin');
-
-                        $info['already_processed'] = 0;
-                        if($this->validate_transaction("transaction_id", $data["transaction_id"], "payin", '=')){
-                            $info['already_processed'] = 1;
-                        } else {
-                            $this->check_balance($data["user_balance"], $data["amount"]) 
-                                ? $this->payin_payout($data) : $response_errors =  $this->generateErrorResponse("0", "703", "insufficient balance");
-                        }
-                        break;
-                    
                     case "transaction_bet_payout":
-                        $data = array(
-                            "user_id" => $user['id'], 
-                            "user_balance" => $user['balance'], 
-                            "amount" => $requestDTO->amount, 
-                            "bet_id" => $requestDTO->betId, 
-                            "transaction_id" => $requestDTO->transactionId, 
-                            "transaction_type" => 'payout');
-
-                        $info['already_processed'] = 0;
-
-                        if($this->validate_transaction("transaction_id", $data["transaction_id"], "payout", '=')){
-                            $info['already_processed'] = 1;
-                        } else {
-                            if($this->validate_transaction("bet_id", $data["bet_id"], "payin", '=')){
-                                if($this->validate_transaction("bet_id", $data["bet_id"], "payout", '=') && !($this->validate_transaction("transaction_id", $data["transaction_id"], "payout", '='))){
-                                    $info['already_processed'] = 1;
-                                } else {
-                                    $this->payin_payout($data);
-                                }
-                            } else {
-                                $response_errors =  $this->generateErrorResponse("0", "700", "there is no PAYIN with provided bet_id");
-                            }
+                        $transac_data = $this->create_transaction_data($user['id'], $user['balance'], $requestDTO);
+                        $res = $this->validation($transac_data, null);
+                        if(isset($res[0])){
+                            $response_errors = $this->generateErrorResponse($res[0][0], $res[0][1], $res[0][2]);
                         }
+                        $info['already_processed'] = $res[1];
                         break;
                 }
             } else {
@@ -122,5 +88,16 @@ class ApiController extends UserController
     function check_time(int $time): bool{
         //return time() - $time <= 60;
         return true;
+    }
+
+    function create_transaction_data($user_id, $balance, $requestDTO): array{
+        $transaction_data = array(
+            "user_id" => $user_id, 
+            "user_balance" => $balance, 
+            "amount" => $requestDTO->amount, 
+            "bet_id" => $requestDTO->betId, 
+            "transaction_id" => $requestDTO->transactionId,
+            "transaction_type" => ($requestDTO->method === "transaction_bet_payin") ? 'payin' : 'payout');
+        return $transaction_data;
     }
 }
