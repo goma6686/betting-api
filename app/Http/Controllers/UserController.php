@@ -11,13 +11,18 @@ class UserController extends Controller
         protected UserRepositoryInterface $userRepository
     ) {}
 
+    public function get_balance() {
+
+        return $this->userRepository->getUserBalance(Auth::user());
+    }
+
     public function update_balance(Request $request)
     {
         $request->validate([
             'balance' => 'numeric|between:0.0,50000.99',
         ]);
         $this->userRepository->manualUserBalance(Auth::id(), $request->balance);
-        
+
         return redirect()->back();
     }
 }

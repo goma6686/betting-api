@@ -30,7 +30,9 @@ Route::controller(LoginController::class)->group(function() {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
 
-//Route::group(['middleware' => 'auth:sanctum'], function(){
+Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::post('/update-balance', [UserController::class, 'update_balance'])->name('update-balance');
     Route::get('/BetGames', [BetController::class, 'index']);
-//});
+    Route::get('/balance', [UserController::class, 'get_balance'])->name('get-balance');
+
+});
