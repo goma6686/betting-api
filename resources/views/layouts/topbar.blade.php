@@ -12,11 +12,11 @@
             <a class="btn btn-outline-light me-2" href="/login">Login</a>
             <a class="btn btn-outline-light me-2" href="/register">Register</a>
           @else
-          <div class="dropdown" id="foo">
+          <div class="dropdown" id="buttons">
             <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
               {{Auth::user()->username }}
             </button>
-            <button type="button" class="btn btn-secondary bar" data-id="{{Auth::user()->id}}" data-bs-toggle="modal" data-bs-target="#balance">
+            <button type="button" class="btn btn-secondary balance" data-id="{{Auth::user()->id}}" data-bs-toggle="modal" data-bs-target="#balance">
               {{Auth::user()->balance/100}} €
             </button>
             
