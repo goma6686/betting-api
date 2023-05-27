@@ -12,13 +12,14 @@
             <a class="btn btn-outline-light me-2" href="/login">Login</a>
             <a class="btn btn-outline-light me-2" href="/register">Register</a>
           @else
-          <div class="dropdown">
+          <div class="dropdown" id="foo">
             <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
               {{Auth::user()->username }}
             </button>
-            <button type="button" class="btn btn-secondary" data-id="{{Auth::user()->id}}" data-bs-toggle="modal" data-bs-target="#balance">
+            <button type="button" class="btn btn-secondary bar" data-id="{{Auth::user()->id}}" data-bs-toggle="modal" data-bs-target="#balance">
               {{Auth::user()->balance/100}} €
             </button>
+            
             @include('layouts.components.modal')
             <ul class="dropdown-menu">
               <li>
