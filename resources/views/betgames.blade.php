@@ -22,7 +22,7 @@
                     language: 'en',
                     timezone: '3',
                     defaultPage: '',
-                    defaultGame: '7',
+                    defaultGame: '{{ $game_id }}',
                 });
             };
             script.type = 'text/javascript';
