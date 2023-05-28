@@ -5,6 +5,7 @@
     @include('layouts/topbar')
     @include('layouts/navbar')
     <div class="container">
+        
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card bg-dark">
@@ -14,35 +15,37 @@
                             @csrf
                             <div class="row mb-3">
                                 <label for="username" class="col-md-4 col-form-label text-md-end" style="color: white;">Username</label>
-    
+                                
                                 <div class="col-md-6">
-                                    <input id="username" type="text" class="form-control" name="username" required autofocus>
+                                    <input id="username" type="text" class="form-control @error('username') is-invalid @enderror" name="username" required autofocus>  
                                 </div>
                             </div>
 
                             <div class="row mb-3">
                                 <label for="password" class="col-md-4 col-form-label text-md-end" style="color: white;">Password</label>
-    
                                 <div class="col-md-6">
-                                    <input id="password" type="password" class="form-control" name="password" required autofocus>
+                                    <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" >
                                 </div>
                             </div>
-
-                            @if ($errors->any())
-                                <div class="alert alert-danger">
-                                    <ul>
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
-    
-                            <div class="row mb-0">
-                                <div class="col-md-6 offset-md-4">
+                            <div class="row mb-3">
+                                <div class="col-auto offset-md-4">
                                     <button type="submit" class="btn btn-danger">
                                         Register
                                     </button>
+                                </div>
+                            </div>
+
+                            <div class="row mb-0">
+                                <div class="col-md-8 offset-md-3">
+                                    @if(Session::has('error'))
+                                        <div class="d-flex alert alert-danger">
+                                            <ul class="mx-auto justify-content-center">
+                                            @foreach ( Session::pull('error') as $error )
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </form>

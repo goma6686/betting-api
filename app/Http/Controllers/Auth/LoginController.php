@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // to access auth services
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Redirect;
 
 class LoginController extends Controller
 {
@@ -16,19 +19,14 @@ class LoginController extends Controller
 
     public function authenticate(Request $request) : RedirectResponse
     {
-        $credentials = $request->validate([
-            'username' => 'required|string|max:25',
-            'password' => 'required|string|min:3',
-        ]);
+        $credentials = $request->only('username', 'password');
  
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             return redirect('/');
         }
-
-        return back()->withErrors([
-            'username' => 'The provided credentials do not match our records.',
-        ])->onlyInput('username');
+        Session::put('invalid', 'invalid credentials');
+        return Redirect::back();
     }
 
     public function logout(Request $request)

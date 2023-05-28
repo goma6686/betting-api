@@ -4,7 +4,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
-    <script src="{{ asset('resources/js/app.js') }}"></script>
     
     @extends('layouts.components.pusher')
 

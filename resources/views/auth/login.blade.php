@@ -41,22 +41,48 @@
                                     </div>
                                 </div>
                             </div>
-
-                            @if ($errors->any())
-                                <div class="alert alert-danger">
-                                    <ul>
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
     
-                            <div class="row mb-0">
+                            <div class="row mb-3">
                                 <div class="col-md-8 offset-md-4">
                                     <button type="submit" class="btn btn-danger">
                                         Login
                                     </button>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-0">
+                                <div class="col-md-8 offset-md-3">
+                                    @if(Session::has('invalid'))
+                                        <div class="d-flex alert alert-danger">
+                                            {{ Session::pull('invalid') }}
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="row mb-0">
+                                <div class="col-md-8 offset-md-3">
+                                    @if(Session::has('error'))
+                                        <div class="d-flex alert alert-danger">
+                                            <ul class="mx-auto justify-content-center">
+                                            @foreach ( Session::pull('error') as $error )
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="row mb-0">
+                                <div class="col-md-8 offset-md-3">
+                                    @if(Session::has('error'))
+                                        <div class="d-flex alert alert-danger">
+                                            <ul class="mx-auto justify-content-center">
+                                            @foreach ( Session::pull('error') as $error )
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </form>

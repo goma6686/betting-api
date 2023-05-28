@@ -21,7 +21,7 @@ Route::get('/', [GameController::class, 'index']);
 
 Route::controller(RegisterController::class)->group(function() {
     Route::post('/store', 'store')->name('store');
-    Route::get('/register', 'register')->name('register');
+    Route::get('/register', 'create')->name('register');
 });
 
 Route::controller(LoginController::class)->group(function() {
