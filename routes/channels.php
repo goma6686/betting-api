@@ -13,9 +13,3 @@ use Illuminate\Support\Facades\Auth;
 | used to check if an authenticated user can listen to the channel.
 |
 */
-
-Broadcast::channel('Balance', function($balance) {
-    $balance = Auth::user()->balance;
-
-    return $balance;
-});

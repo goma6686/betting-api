@@ -3,9 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\Auth\BetController;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,7 +23,7 @@ Route::get('/', [GameController::class, 'index']);
 
 Route::controller(RegisterController::class)->group(function() {
     Route::post('/store', 'store')->name('store');
-    Route::get('/register', 'register')->name('register');
+    Route::get('/register', 'create')->name('register');
 });
 
 Route::controller(LoginController::class)->group(function() {
@@ -32,7 +34,8 @@ Route::controller(LoginController::class)->group(function() {
 
 Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::post('/update-balance', [UserController::class, 'update_balance'])->name('update-balance');
-    Route::get('/BetGames', [BetController::class, 'index']);
-    Route::get('/balance', [UserController::class, 'get_balance'])->name('get-balance');
+    Route::get('/BetGames/{game_id}', function (Request $request, int $game_id = 7) {
+        return view('betgames', ['token' =>  ($request->user()->createToken('token'))->plainTextToken, 'game_id' => $game_id]);
+    });
 
 });

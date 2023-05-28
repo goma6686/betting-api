@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use App\Events\UpdateBalance;
 use App\Models\User;
-use Pusher\Pusher;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 
 class UserRepository implements UserRepositoryInterface{
@@ -12,11 +11,6 @@ class UserRepository implements UserRepositoryInterface{
     public function getUserById($userId): User
     {
         return User::findOrFail($userId);
-    }
-
-    public function getUserBalance($user) {
-
-        return $user->balance;
     }
 
     public function updateBalance($userId, $type, $balance, $amount) 
