@@ -14,6 +14,6 @@ trait ResponseTrait {
 
     private function generateSuccessResponse()
     {
-        return $this->generateErrorResponse("1", "0", "");
+        return $this->generateErrorResponse(1, 0, '');
     }
 }

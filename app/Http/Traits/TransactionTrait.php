@@ -3,7 +3,7 @@
 namespace App\Http\Traits;
 
 trait TransactionTrait{      
-    public function validation($data, $response_errors){
+    public function validation($data){
         $is_processed = 0;
         
         if($this->does_exist("transaction_id", $data["transaction_id"], $data["transaction_type"], '=')){
