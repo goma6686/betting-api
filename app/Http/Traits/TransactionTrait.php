@@ -2,40 +2,53 @@
 
 namespace App\Http\Traits;
 
+use App\Enums\ResponseStatus;
+
 trait TransactionTrait{      
-    public function validation($data, $response_errors){
-        $is_processed = 0;
-        
-        if($this->does_exist("transaction_id", $data["transaction_id"], $data["transaction_type"], '=')){
-            $is_processed = 1;
+    public function validation($data): ?array{
+        if($this->doesTransactionExist("transaction_id", $data["transaction_id"], $data["transaction_type"], '=')){
+            return [$this->generateSuccessResponse(), 1];
         } else {
             if($data["transaction_type"] === 'payin'){
-                $this->transactionRepository->payin($data) ? 
-                    $this->payin_payout($data) 
-                    : $response_errors = array("0", "703", "insufficient balance");
+                return $this->payinValidation($data);
             } else {
-                $this->transactionRepository->payout($data) 
-                    ? : $response_errors = array("0", "700", "there is no PAYIN with provided bet_id");
-
-                isset($response_errors) ??
-                    ($this->does_exist("bet_id", $data["bet_id"],  $data["transaction_type"], '=') && !($this->does_exist("transaction_id", $data["transaction_id"], $data["transaction_type"], '=')))
-                    ? $is_processed = 1 
-                    : $this->payin_payout($data);
+                return $this->payoutValidation($data);
             }
         }
-        return array($response_errors, $is_processed);
     }
 
-    public function does_exist($column, $value, $type, $operator){
+    public function payinValidation($data): array{
+        if (!($this->transactionRepository->checkBalance($data["user_balance"], $data["amount"]))){
+            return [$this->generateErrorResponse(0, ResponseStatus::INSUFFICIENT_BALANCE, ResponseStatus::$statusText[ResponseStatus::INSUFFICIENT_BALANCE]), 0];
+        } else {
+            $this->payinPayout($data);
+            return [$this->generateSuccessResponse(), 0];
+        }
+    }
+
+    public function payoutValidation($data): array{
+        if(!($this->transactionRepository->doesTransactionExist("bet_id", $data["bet_id"], "payin", '='))){
+            return [$this->generateErrorResponse(0, ResponseStatus::NO_PAYIN, ResponseStatus::$statusText[ResponseStatus::NO_PAYIN]), 0];
+        } else {
+            if(($this->doesTransactionExist("bet_id", $data["bet_id"],  $data["transaction_type"], '=') && ($this->doesTransactionExist("transaction_id", $data["transaction_id"], $data["transaction_type"], '<>')))){
+                return [$this->generateSuccessResponse(), 1];
+            } else {
+                $this->payinPayout($data);
+                return [$this->generateSuccessResponse(), 0];
+            }
+        }
+    }
+
+    public function doesTransactionExist($column, $value, $type, $operator): bool{
         return $this->transactionRepository->doesTransactionExist($column, $value, $type, $operator);
     }
 
-    public function payin_payout(array $data){
+    public function payinPayout(array $data){
         $this->userRepository->updateBalance($data["user_id"], $data["transaction_type"], $data["user_balance"], $data["amount"]);
         $this->transactionRepository->createTransaction($data);
     }
 
     public function getTransactionData($user_id, $balance, $requestDTO){
-        return $this->transactionRepository->create_transaction_data($user_id, $balance, $requestDTO);
+        return $this->transactionRepository->createTransactionData($user_id, $balance, $requestDTO);
     }
 }

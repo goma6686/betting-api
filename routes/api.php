@@ -19,5 +19,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 //Route::group(['middleware' => 'auth:sanctum'], function(){
-    Route::post('/betgames', [ApiController::class, 'methods']);
+    Route::post('/betgames', [ApiController::class, 'index']);
 //});

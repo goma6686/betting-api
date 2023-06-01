@@ -15,7 +15,7 @@ class TokenRepository implements TokenRepositoryInterface
         return PersonalAccessToken::findToken($plainToken);
     }
 
-    public function issue_token(User $user): string
+    public function issueToken(User $user): string
     {
         if ($user->tokens()){
             $user->tokens()->delete();

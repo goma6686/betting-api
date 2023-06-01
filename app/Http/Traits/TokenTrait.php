@@ -10,19 +10,19 @@ trait TokenTrait{
         return $this->tokenRepository->checkToken($token);
     }
 
-    public function issue_token(User $user): string{
-        return $this->tokenRepository->issue_token($user);
+    public function issueToken(User $user): string{
+        return $this->tokenRepository->issueToken($user);
     }
 
     public function token($plainToken){
         return $this->tokenRepository->getToken($plainToken);
     }
 
-    public function refresh_token(string $sactumToken){
+    public function refreshToken(string $sactumToken){
         return $this->tokenRepository->refreshToken($sactumToken);
     }
 
-    public function get_user_by_token($token){
+    public function getUserByToken($token){
         return $this->token($token)->tokenable;
     }
 }
