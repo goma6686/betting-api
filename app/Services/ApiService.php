@@ -10,8 +10,8 @@ use App\Http\Traits\TokenTrait;
 use App\Http\Traits\ResponseTrait;
 use App\Http\Traits\TransactionTrait;
 use App\Enums\ResponseStatus;
-use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Str;
+use App\Models\User;
 
 class ApiService
 {
@@ -24,36 +24,37 @@ class ApiService
     ) {}
 
     public function index($secret, $data){
-        $response_errors = $this->api_validation($secret, $data);
+        $response_errors = $this->apiValidation($secret, $data);
 
         if(!isset($response_errors) && $data->method !== 'ping'){
-            $params = $this->api_methods($data);
+            if($data->method === 'transaction_bet_payin'){
+                $response_errors = $this->validation($this->getTransactionData($this->getUserByToken($data->token)->id, $this->getUserByToken($data->token)->balance, $data));
+            } else if($data->method === 'transaction_bet_payout'){
+                $response_errors = $this->validation($this->getTransactionData($data->player_id, $this->userRepository->getUserById($data->player_id), $data));
+            }
+            $params = $this->apiMethods($data, $response_errors[1] ?? null);
+            $this->refreshToken($data->token);
         }
 
-        if(!isset($response_errors)){
-            $response_errors = $this->generateSuccessResponse();
-            if($data->method !== 'ping'){
-                $this->refresh_token($data->token);
-            }
-        }
+        $response_errors = isset($response_errors) ? $response_errors : $this->generateSuccessResponse();
 
         $responseId = Str::uuid()->toString();
         $signature = hash_hmac('sha256', $responseId, $secret);
 
         return [
-            'response_errors' =>$response_errors, 
+            'response_errors' => $response_errors[0] ?? $response_errors,
             'params' => $params ?? null, 
             'responseId' => $responseId, 
             'signature' => $signature
         ];
     }
 
-    public function api_validation(string $secret, $data): ?array{
+    public function apiValidation(string $secret, $data): ?array{
 
-        if (!($this->check_signature($secret, $data->requestId, $data->signature))){
+        if (!($this->checkSignature($secret, $data->requestId, $data->signature))){
             return $this->generateErrorResponse(0, ResponseStatus::WRONG_SIGNATURE, ResponseStatus::$statusText[ResponseStatus::WRONG_SIGNATURE]);
 
-        }else if(!($this->check_time($data->time))){
+        }else if(!($this->checkTime($data->time))){
             return $this->generateErrorResponse(0, ResponseStatus::REQUEST_EXPIRED, ResponseStatus::$statusText[ResponseStatus::REQUEST_EXPIRED]);
 
         } else {
@@ -65,9 +66,9 @@ class ApiService
         }
     }
 
-    function api_methods($data): ?array{
+    function apiMethods($data, $already_processed): ?array{
         $params = [];
-        $user = $this->get_user_by_token($data->token);
+        $user = $this->getUserByToken($data->token);
 
         switch ($data->method) {
             case "get_account_details":
@@ -87,25 +88,19 @@ class ApiService
 
             case "transaction_bet_payin":
             case "transaction_bet_payout":
-                $transac_data = $this->getTransactionData($user['id'], $user['balance'], $data);
-                $res = $this->validation($transac_data);
-                
-                if(isset($res[0])){
-                    $res = $this->generateErrorResponse($res[0][0], $res[0][1], $res[0][2]);
-                }
-                $params['already_processed'] = $res[1];
-                $params['balance_after'] = PersonalAccessToken::findToken($data->token)->tokenable['balance'];
+                $params['already_processed'] = $already_processed;
+                $params['balance_after'] = ($user)['balance'];
                 break;
         }
 
         return $params;
     }
 
-    function check_signature(string $secret, string $requestId, string $signature): bool{
+    function checkSignature(string $secret, string $requestId, string $signature): bool{
         return hash_hmac('sha256', $requestId, $secret) === $signature;
     }
 
-    function check_time(int $time): bool{
+    function checkTime(int $time): bool{
         //return time() - $time <= 60;
         return true;
     }

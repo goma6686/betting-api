@@ -6,7 +6,7 @@ namespace App\DTO;
 use SimpleXMLElement;
 
 class DTOHelper{
-    public static function from_xml(SimpleXMLElement $xml){
+    public static function fromXml(SimpleXMLElement $xml){
         
         $method = (string)$xml->method;
         $token = (string)$xml->token;
@@ -18,12 +18,12 @@ class DTOHelper{
         $betId = (int)$xml->params->children()->bet_id ?? null;
         $transactionId = (int)$xml->params->children()->transaction_id ?? null;
         $retrying = (int)$xml->params->children()->retrying ?? null;
-        $params = (string)$xml->params->children() ?? (string)$xml->params;
+        $player_id = (string)$xml->params->children()->player_id ?? (string)$xml->params;
 
-        return new XmlRequest($method, $token, $request_id, $time, $signature, $amount, $currency, $betId, $transactionId, $retrying, $params);
+        return new XmlRequest($method, $token, $request_id, $time, $signature, $amount, $currency, $betId, $transactionId, $retrying, $player_id);
     }
 
-    public static function to_xml(string $method, string $token, array $response, ?array $info, $responseId, $signature): string{
+    public static function toXml(string $method, string $token, array $response, ?array $info, $responseId, $signature): string{
 
         $xmlResponse = new \SimpleXMLElement('<root/>');
         $xmlResponse->addChild('method', $method);

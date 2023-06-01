@@ -8,6 +8,6 @@ interface TokenRepositoryInterface
 {
     public function getToken(string $plainToken);
     public function checkToken(string $token): bool;
-    public function issue_token (User $user): string;
+    public function issueToken (User $user): string;
     public function refreshToken(string $token);
 }

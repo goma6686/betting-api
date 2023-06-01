@@ -15,6 +15,6 @@ final class XmlRequest
         public readonly ?int $betId = null,
         public readonly ?int $transactionId = null,
         public readonly ?int $retrying = null,
-        public readonly ?string $params = null
+        public readonly ?string $player_id = null
     ) {}
 }
