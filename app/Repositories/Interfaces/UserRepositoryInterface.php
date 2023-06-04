@@ -5,7 +5,7 @@ namespace App\Repositories\Interfaces;
 use App\Models\User;
 
 interface UserRepositoryInterface{
-    public function getUserById($userId): User;
-    public function updateBalance($userId, $type, $balance, $amount);
-    public function manualUserBalance($userId, $amount);
+    public function getUserById(string $userId): User;
+    public function updateBalance(string $userId,string $type,int $balance,int $amount);
+    public function manualUserBalance(string $userId,int $amount);
 }
