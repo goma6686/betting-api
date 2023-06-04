@@ -34,8 +34,8 @@ Route::controller(LoginController::class)->group(function() {
 
 Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::post('/update-balance', [UserController::class, 'updateBalance'])->name('update-balance');
-    Route::get('/BetGames/{game_id}', function (Request $request, int $game_id = 7) {
+    Route::get('/BetGames/{game_id?}', function (Request $request, int $game_id = 7) {
         return view('betgames', ['token' =>  ($request->user()->createToken('token'))->plainTextToken, 'game_id' => $game_id]);
-    });
+    })->name('BetGames');
 
 });
