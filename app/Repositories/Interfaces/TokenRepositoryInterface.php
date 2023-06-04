@@ -10,4 +10,5 @@ interface TokenRepositoryInterface
     public function checkToken(string $token): bool;
     public function issueToken (User $user): string;
     public function refreshToken(string $token);
+    public function getUserByToken(string $token);
 }
