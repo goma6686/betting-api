@@ -34,6 +34,12 @@ class TokenRepository implements TokenRepositoryInterface
     }
 
     public function refreshToken(string $token){
-        DB::table('personal_access_tokens')->where('id', PersonalAccessToken::findToken($token)->id)->update(['created_at' => now()]);
+        if($this->checkToken($token)){
+            DB::table('personal_access_tokens')->where('id', PersonalAccessToken::findToken($token)->id)->update(['created_at' => now()]);
+        }
+    }
+
+    public function getUserByToken(string $token){
+        return $this->getToken($token)->tokenable;
     }
 }

@@ -6,7 +6,6 @@ namespace App\Services;
 use App\Repositories\Interfaces\TokenRepositoryInterface;
 use App\Repositories\Interfaces\TransactionRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
-use App\Http\Traits\TokenTrait;
 use App\Http\Traits\ResponseTrait;
 use App\Http\Traits\TransactionTrait;
 use App\Enums\ResponseStatus;
@@ -14,12 +13,13 @@ use Illuminate\Support\Str;
 
 class ApiService
 {
-    use TokenTrait, ResponseTrait, TransactionTrait;
+    use ResponseTrait, TransactionTrait;
+
 
     public function __construct(
         protected TokenRepositoryInterface $tokenRepository,
         protected TransactionRepositoryInterface $transactionRepository,
-        protected UserRepositoryInterface $userRepository
+        protected UserRepositoryInterface $userRepository,
     ) {}
 
     public function index($secret, $data){
@@ -27,14 +27,17 @@ class ApiService
 
         if(!isset($response_errors) && $data->method !== 'ping'){
             if($data->method === 'transaction_bet_payin'){
-                $response_errors = $this->validation($this->getTransactionData($this->getUserByToken($data->token)->id, (int)$this->getUserByToken($data->token)->balance, $data));
+                $user = $this->tokenRepository->getUserByToken($data->token);
+                $response_errors = $this->validation($this->getTransactionData($user->id, (int)$user->balance, $data));
                 
             } else if($data->method === 'transaction_bet_payout'){
-                $response_errors = $this->validation($this->getTransactionData($data->player_id, (int)$this->userRepository->getUserById($data->player_id)->balance, $data));
+                $user = $this->userRepository->getUserById($data->player_id);
+                $response_errors = $this->validation($this->getTransactionData($data->player_id, (int)$user->balance, $data));
 
             }
-            $params = $this->apiMethods($data, $response_errors[1] ?? null);
-            $this->refreshToken($data->token);
+            $params = $this->apiMethods($user ?? null, $data, $response_errors[1] ?? null);
+            
+            $this->tokenRepository->refreshToken($data->token);
         }
 
         $response_errors = isset($response_errors) ? $response_errors : $this->generateSuccessResponse();
@@ -59,7 +62,7 @@ class ApiService
             return $this->generateErrorResponse(0, ResponseStatus::REQUEST_EXPIRED, ResponseStatus::$statusText[ResponseStatus::REQUEST_EXPIRED]);
 
         } else {
-            if(!($this->checkToken($data->token, $data->method)) && (($data->method !== 'ping') && ($data->method !== 'transaction_bet_payout'))){
+            if(!($this->tokenRepository->checkToken($data->token, $data->method)) && (($data->method !== 'ping') && ($data->method !== 'transaction_bet_payout'))){
                 return $this->generateErrorResponse(0, ResponseStatus::INVALID_TOKEN, ResponseStatus::$statusText[ResponseStatus::INVALID_TOKEN]);
             } else {
                 return null;
@@ -67,9 +70,8 @@ class ApiService
         }
     }
 
-    function apiMethods($data, $already_processed): ?array{
+    function apiMethods($user, $data, $already_processed): ?array{
         $params = [];
-        $user = $this->getUserByToken($data->token);
 
         switch ($data->method) {
             case "get_account_details":
@@ -84,16 +86,19 @@ class ApiService
                 break;
 
             case "get_balance":
+                $user = $this->tokenRepository->getUserByToken($data->token);
                 $params['balance'] = ($user)['balance'];
                 break;
 
+            
             case "transaction_bet_payin":
+                $user = $this->tokenRepository->getUserByToken($data->token);
             case "transaction_bet_payout":
+                $user ?? $this->userRepository->getUserById($data->player_id);
                 $params['already_processed'] = $already_processed;
                 $params['balance_after'] = ($user)['balance'];
                 break;
         }
-
         return $params;
     }
 
@@ -102,7 +107,7 @@ class ApiService
     }
 
     function checkTime(int $time): bool{
-        //return time() - $time <= 60;
-        return true;
+        return time() - $time <= 60;
+        //return true;
     }
 }
