@@ -7,5 +7,5 @@ interface TransactionRepositoryInterface{
     public function getTransactionById($transactionId);
     public function createTransaction(array $transactionData);
     public function checkBalance($balance, $amount): bool;
-    public function createTransactionData($user_id, $balance, $requestDTO): array;
+    public function createTransactionData(string $user_id, int $balance, $requestDTO): array;
 }

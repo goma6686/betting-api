@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Traits;
 
@@ -44,11 +45,15 @@ trait TransactionTrait{
     }
 
     public function payinPayout(array $data){
-        $this->userRepository->updateBalance($data["user_id"], $data["transaction_type"], $data["user_balance"], $data["amount"]);
+        $this->userRepository->updateBalance((string)$data["user_id"], $data["transaction_type"], (int)$data["user_balance"], (int)$data["amount"]);
+        $this->createTransaction($data);
+    }
+
+    public function createTransaction($data){
         $this->transactionRepository->createTransaction($data);
     }
 
-    public function getTransactionData($user_id, $balance, $requestDTO){
+    public function getTransactionData(string $user_id, int $balance, $requestDTO){
         return $this->transactionRepository->createTransactionData($user_id, $balance, $requestDTO);
     }
 }

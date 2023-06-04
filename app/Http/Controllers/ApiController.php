@@ -24,7 +24,7 @@ class ApiController extends UserController
         $data = $this->apiService->index(self::SECRET, $requestDTO);
         
         return response(
-            DTOHelper::toXml($requestDTO->method, $requestDTO->token, $data['response_errors'], $data['params'] ?? null, $data['responseId'], time(), $data['signature'])
+            DTOHelper::toXml($requestDTO->method, $requestDTO->token, $data['response_errors'], $data['params'] ?? null, $data['responseId'], $data['signature'])
             )->header('Content-Type', 'application/xml');
     }
 }

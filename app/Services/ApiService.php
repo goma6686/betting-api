@@ -11,7 +11,6 @@ use App\Http\Traits\ResponseTrait;
 use App\Http\Traits\TransactionTrait;
 use App\Enums\ResponseStatus;
 use Illuminate\Support\Str;
-use App\Models\User;
 
 class ApiService
 {
@@ -28,9 +27,11 @@ class ApiService
 
         if(!isset($response_errors) && $data->method !== 'ping'){
             if($data->method === 'transaction_bet_payin'){
-                $response_errors = $this->validation($this->getTransactionData($this->getUserByToken($data->token)->id, $this->getUserByToken($data->token)->balance, $data));
+                $response_errors = $this->validation($this->getTransactionData($this->getUserByToken($data->token)->id, (int)$this->getUserByToken($data->token)->balance, $data));
+                
             } else if($data->method === 'transaction_bet_payout'){
-                $response_errors = $this->validation($this->getTransactionData($data->player_id, $this->userRepository->getUserById($data->player_id), $data));
+                $response_errors = $this->validation($this->getTransactionData($data->player_id, (int)$this->userRepository->getUserById($data->player_id)->balance, $data));
+
             }
             $params = $this->apiMethods($data, $response_errors[1] ?? null);
             $this->refreshToken($data->token);
@@ -75,7 +76,7 @@ class ApiService
                 $params['user_id'] = ($user)['id'];
                 $params['username'] = ($user)['username'];
                 $params['currency'] = ($user)['currency'];
-                $params['info'] = ($this->token($data->token)->token);
+                $params['info'] = ($this->tokenRepository->getToken($data->token)->token);
                 break;
 
             case 'request_new_token':
