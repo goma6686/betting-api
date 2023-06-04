@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Events\UpdateBalance;
 use App\Models\User;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 
@@ -21,12 +22,12 @@ class UserRepository implements UserRepositoryInterface{
             $user->update(['balance' => $balance - $amount]) : 
             $user->update(['balance' => $balance + $amount]);
             
-        //event(new UpdateBalance($user->balance));
+        event(new UpdateBalance($balance));
     }
 
-    public function manualUserBalance(string $userId,int $amount){
+    public function manualUserBalance(string $userId,float $amount){
        $user = $this->getUserById($userId);
-
+       
         $user->update(['balance' => 100*$amount]);
     }
 }
