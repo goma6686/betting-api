@@ -15,7 +15,7 @@ class TokenRepository implements TokenRepositoryInterface
         return PersonalAccessToken::findToken($plainToken);
     }
 
-    public function issue_token(User $user): string
+    public function issueToken(User $user): string
     {
         if ($user->tokens()){
             $user->tokens()->delete();
@@ -34,6 +34,12 @@ class TokenRepository implements TokenRepositoryInterface
     }
 
     public function refreshToken(string $token){
-        DB::table('personal_access_tokens')->where('id', PersonalAccessToken::findToken($token)->id)->update(['created_at' => now()]);
+        if($this->checkToken($token)){
+            DB::table('personal_access_tokens')->where('id', PersonalAccessToken::findToken($token)->id)->update(['created_at' => now()]);
+        }
+    }
+
+    public function getUserByToken(string $token){
+        return $this->getToken($token)->tokenable;
     }
 }

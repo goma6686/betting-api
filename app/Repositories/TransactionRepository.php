@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Repositories;
 
@@ -22,14 +23,6 @@ class TransactionRepository implements TransactionRepositoryInterface
         return ($balance >= $amount);
     }
 
-    public function payin($data): bool{
-        return $this->checkBalance($data["user_balance"], $data["amount"]);
-    }
-
-    public function payout($data){
-        return $this->doesTransactionExist("bet_id", $data["bet_id"], "payin", '=');
-    }
-
     public function createTransaction(array $data)
     {
         Transaction::create([
@@ -42,13 +35,13 @@ class TransactionRepository implements TransactionRepositoryInterface
         ]);
     }
 
-    function create_transaction_data($user_id, $balance, $requestDTO): array{
+    function createTransactionData(string $user_id, int $balance, $requestDTO): array{
         $transaction_data = array(
             "user_id" => $user_id, 
-            "user_balance" => $balance, 
-            "amount" => $requestDTO->amount, 
-            "bet_id" => $requestDTO->betId, 
-            "transaction_id" => $requestDTO->transactionId,
+            "user_balance" => (int)$balance, 
+            "amount" => (int)$requestDTO->amount, 
+            "bet_id" => (int)$requestDTO->betId, 
+            "transaction_id" => (int)$requestDTO->transactionId,
             "transaction_type" => ($requestDTO->method === "transaction_bet_payin") ? 'payin' : 'payout');
         return $transaction_data;
     }
