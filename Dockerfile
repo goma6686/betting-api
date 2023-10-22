@@ -3,7 +3,7 @@ WORKDIR /app
 COPY . /app
 RUN composer global require hirak/prestissimo && composer install
 
-FROM php:8.1-apache-stretch
+FROM php:8.2-cli
 RUN docker-php-ext-install pdo pdo_mysql
 
 EXPOSE 8080
